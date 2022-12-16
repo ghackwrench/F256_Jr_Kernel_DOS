@@ -36,20 +36,28 @@ words       .namespace
             .align  256
 base        .null   ""      ; So offset zero is invalid
 help        .null   "help"
+ls          .null   "ls"
 dir         .null   "dir"
 read        .null   "read"
 write       .null   "write"  
 dump        .null   "dump" 
 basic       .null   "basic"     
+rm          .null   "rm"     
+del         .null   "del"     
+delete      .null   "delete"     
             .endn
 
 commands
             .word   words.help,     help
+            .word   words.ls,       dir.cmd
             .word   words.dir,      dir.cmd
             .word   words.read,     read.cmd
             .word   words.write,    write.cmd
             .word   words.dump,     dump.cmd
             .word   words.basic,    basic
+            .word   words.rm,       delete.cmd
+            .word   words.del,      delete.cmd
+            .word   words.delete,   delete.cmd
             .word   0
 
 help
@@ -65,10 +73,14 @@ _done
             rts        
 _msg
             .byte   $0a
-            .text   "dir                Shows the directory",$0a
-            .text   "read  <fname>      Prints the contents of <fname>", $0a
-            .text   "write <fname>      Writes user input to <fname>.", $0a
-            .text   "dump  <fname>      Hex-dumps <fname>.", $0a
+            .text   "ls                 Shows the directory.",$0a
+            .text   "dir                Shows the directory.",$0a
+            .text   "read   <fname>     Prints the contents of <fname>.", $0a
+            .text   "write  <fname>     Writes user input to <fname>.", $0a
+            .text   "dump   <fname>     Hex-dumps <fname>.", $0a
+            .text   "rm     <fname>     Delete <fname>.", $0a
+            .text   "del    <fname>     Delete <fname>.", $0a
+            .text   "delete <fname>     Delete <fname>.", $0a
             .text   "basic              Starts SuperBASIC.", $0a
             .text   "help               Prints this text.", $0a
             .byte   $0

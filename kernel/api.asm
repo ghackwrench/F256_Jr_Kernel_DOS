@@ -110,6 +110,7 @@ DATA        .word   ?
 WROTE       .word   ?
 EOF         .word   ?
 CLOSED      .word   ?
+DELETED     .word   ?
 ERROR       .word   ?   ; An error occured; user should close
             .endn
 
