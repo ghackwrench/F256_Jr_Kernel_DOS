@@ -8,6 +8,7 @@ reader      .namespace
 stop        .byte       ?
 read_len    .byte       ?
 print_fn    .byte       ?
+remaining   .byte       ?
             .send            
 
             .section    code
@@ -18,6 +19,7 @@ read_file
 
           ; Stash the read size and print function
             sta     read_len
+            sta     remaining
             stx     print_fn
 
           ; This command requires an argument
@@ -101,16 +103,27 @@ _read
             lda     event.file.stream
             sta     kernel.args.file.read.stream
 
-          ; Set the read size
+          ; Set the read size; adjusts for cosmetic reasons.
+            lda     remaining
+            bne     _set
             lda     read_len
-            sta     kernel.args.file.read.buflen
+_set        sta     kernel.args.file.read.buflen
 
           ; Request the data
             jmp     kernel.File.Read
 
 _data
-          ; Print the data and go back to read more.
+          ; Print the data
             jsr     data
+
+          ; Reuqest the next read.  If remaining is non-zero,
+          ; continues to work it down to zero.  This is really
+          ; just to make cmd_dump look pretty.
+            lda     remaining
+            beq     _read
+            sec
+            sbc     event.file.data.read
+            sta     remaining
             bra     _read
 
 _eof
