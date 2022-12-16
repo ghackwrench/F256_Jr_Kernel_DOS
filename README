@@ -1,0 +1,19 @@
+TinyCore MicroKernel API and Sample DOS
+---------------------------------------
+
+This project exports and documents the TinyCore MicroKernel API as used on the
+Foenix F256 line of 6502-based microcomputers. It includes, as part of the
+documentation, a simple command line "DOS"-style shell which demonstrates how
+each of the kernel calls are used.  Readers are expected and encouraged to
+copy, paste, and modify any and all parts of this program for their own use
+without any form of implied license baggage.  To the extent that the shell
+proves useful in its own right, it shall be considered a community supported
+and maintained application.  - Jessie Oberreuter, 2022.
+
+Manifest
+
+    Makefile    Builds the shell, and exports it as kernel/01.bin.
+    kernel/     Contains the latest kernel/api.asm and kernel binary blocks.
+    dos/        Contains the source code for a simple demonstration DOS CLI.
+    docs/       Will contain actual documentation text when I have time.
+    README      This file.
