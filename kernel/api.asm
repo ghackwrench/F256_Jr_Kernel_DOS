@@ -110,6 +110,7 @@ DATA        .word   ?
 WROTE       .word   ?
 EOF         .word   ?
 CLOSED      .word   ?
+RENAMED     .word   ?
 DELETED     .word   ?
 ERROR       .word   ?   ; An error occured; user should close
             .endn
@@ -233,6 +234,8 @@ device      .byte       ?   ; Always: device the call is intended for.
 recv_t      .struct
 buf         .word       ?
 buflen      .byte       ?
+ext         .word       ?
+extlen      .byte       ?
             .ends
 
           ; Internet Protocol
@@ -254,6 +257,8 @@ dest_ip     .fill       4
             .struct
 buf         .word       ?
 buflen      .byte       ?
+ext         .word       ?
+extlen      .byte       ?
             .ends
 
             .endu
@@ -276,12 +281,15 @@ open        .dstruct    fs_open_t
 read        .dstruct    fs_read_t
 write       .dstruct    fs_write_t
 close       .dstruct    fs_close_t
+rename      .dstruct    fs_rename_t
+delete      .dstruct    fs_open_t
             .endu
             .ends            
 
 fs_open_t   .struct
 fname       .word       ?   ; Must be first
 fname_len   .byte       ?   ; Must be second
+            .fill       3   ; Match rename
 drive       .byte       ?
 cookie      .byte       ?
 mode        .byte       ?
@@ -304,5 +312,22 @@ stream      .byte       ?
 fs_close_t  .struct
 stream      .byte       ?
             .ends
+
+fs_rename_t .struct
+old         .word       ?   ; Must be first
+old_len     .byte       ?   ; Must be second
+new         .word       ?   ; Address of new name
+new_len     .byte       ?   ; Length of new name (must follow the address)
+drive       .byte       ?
+cookie      .byte       ?
+            .ends
+
+fs_delete_t .struct
+fname       .word       ?   ; Must be first
+fname_len   .byte       ?   ; Must be second
+drive       .byte       ?
+cookie      .byte       ?
+            .ends
+
 
             .endn

@@ -7,6 +7,7 @@ DOS	= \
 	dos/cmd_read.asm \
 	dos/cmd_write.asm \
 	dos/cmd_dump.asm \
+	dos/cmd_rename.asm \
 	dos/cmd_delete.asm \
 	dos/strings.asm \
 	dos/display.asm \

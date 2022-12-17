@@ -41,7 +41,8 @@ dir         .null   "dir"
 read        .null   "read"
 write       .null   "write"  
 dump        .null   "dump" 
-basic       .null   "basic"     
+basic       .null   "basic"  
+rename      .null   "rename"   
 rm          .null   "rm"     
 del         .null   "del"     
 delete      .null   "delete"     
@@ -55,6 +56,7 @@ commands
             .word   words.write,    write.cmd
             .word   words.dump,     dump.cmd
             .word   words.basic,    basic
+            .word   words.rename,   rename.cmd
             .word   words.rm,       delete.cmd
             .word   words.del,      delete.cmd
             .word   words.delete,   delete.cmd
@@ -73,16 +75,17 @@ _done
             rts        
 _msg
             .byte   $0a
-            .text   "ls                 Shows the directory.",$0a
-            .text   "dir                Shows the directory.",$0a
-            .text   "read   <fname>     Prints the contents of <fname>.", $0a
-            .text   "write  <fname>     Writes user input to <fname>.", $0a
-            .text   "dump   <fname>     Hex-dumps <fname>.", $0a
-            .text   "rm     <fname>     Delete <fname>.", $0a
-            .text   "del    <fname>     Delete <fname>.", $0a
-            .text   "delete <fname>     Delete <fname>.", $0a
-            .text   "basic              Starts SuperBASIC.", $0a
-            .text   "help               Prints this text.", $0a
+            .text   "ls                  Shows the directory.",$0a
+            .text   "dir                 Shows the directory.",$0a
+            .text   "read   <fname>      Prints the contents of <fname>.", $0a
+            .text   "write  <fname>      Writes user input to <fname>.", $0a
+            .text   "dump   <fname>      Hex-dumps <fname>.", $0a
+            .text   "rm     <fname>      Delete <fname>.", $0a
+            .text   "del    <fname>      Delete <fname>.", $0a
+            .text   "rename <old> <new>  Rename <old> to <new>.", $0a
+            .text   "delete <fname>      Delete <fname>.", $0a
+            .text   "basic               Starts SuperBASIC.", $0a
+            .text   "help                Prints this text.", $0a
             .byte   $0
 
 start
