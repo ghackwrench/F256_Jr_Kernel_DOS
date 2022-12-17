@@ -325,6 +325,7 @@ cookie      .byte       ?
 fs_delete_t .struct
 fname       .word       ?   ; Must be first
 fname_len   .byte       ?   ; Must be second
+            .fill       3
 drive       .byte       ?
 cookie      .byte       ?
             .ends

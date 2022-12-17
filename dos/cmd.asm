@@ -22,7 +22,7 @@ cmd         .namespace
             .section    dp
 eol         .byte       ?
 drives      .byte       ?
-tmp         .byte       ?
+tmp         .word       ?
             .send            
 
             .section    data
@@ -63,12 +63,18 @@ commands
             .word   0
 
 help
+            lda     #<_msg
+            sta     tmp+0
+            lda     #>_msg
+            sta     tmp+1
             phy
             ldy     #0
-_loop       lda     _msg,y
+_loop       lda     (tmp),y
             beq     _done
             jsr     putc
             iny
+            bne     _loop
+            inc     tmp+1
             bra     _loop
 _done
             ply
