@@ -46,6 +46,7 @@ rename      .null   "rename"
 rm          .null   "rm"     
 del         .null   "del"     
 delete      .null   "delete"     
+mkfs        .null   "mkfs"
             .endn
 
 commands
@@ -60,6 +61,7 @@ commands
             .word   words.rm,       delete.cmd
             .word   words.del,      delete.cmd
             .word   words.delete,   delete.cmd
+            .word   words.mkfs,     mkfs.cmd
             .word   0
 
 help
@@ -90,6 +92,7 @@ _msg
             .text   "del    <fname>      Delete <fname>.", $0a
             .text   "rename <old> <new>  Rename <old> to <new>.", $0a
             .text   "delete <fname>      Delete <fname>.", $0a
+            .text   "mkfs   <label>      Creates a new filesystem on the device.", $0a
             .text   "basic               Starts SuperBASIC.", $0a
             .text   "help                Prints this text.", $0a
             .byte   $0

@@ -115,6 +115,11 @@ DELETED     .word   ?
 ERROR       .word   ?   ; An error occured; user should close
             .endn
 
+fs          .namespace
+CREATED     .word   ?
+ERROR       .word   ?
+            .endn
+
             .ends
 
 event_t     .struct
@@ -209,7 +214,8 @@ ptr         .word       ?   ; Always: kernel scratch pointer
             .union
 
 ip          .dstruct    ip_t
-file        .dstruct    fs_t
+fs          .dstruct    fs_t
+file        .dstruct    file_t
 directory   .dstruct    dir_t
 recv        .dstruct    recv_t
 
@@ -264,18 +270,16 @@ extlen      .byte       ?
             .endu
             .ends
 
-
-          ; FileSystem
-dir_t       .struct
-            .union
-open        .dstruct    fs_open_t
-read        .dstruct    fs_read_t
-close       .dstruct    fs_close_t
-            .endu
-            .ends            
-
           ; FileSystem
 fs_t        .struct
+            .union
+format      .dstruct    fs_mkfs_t
+mkfs        .dstruct    fs_mkfs_t
+            .endu
+            .ends
+    
+          ; File
+file_t      .struct
             .union
 open        .dstruct    fs_open_t
 read        .dstruct    fs_read_t
@@ -285,6 +289,16 @@ rename      .dstruct    fs_rename_t
 delete      .dstruct    fs_open_t
             .endu
             .ends            
+
+          ; Directory
+dir_t       .struct
+            .union
+open        .dstruct    fs_open_t
+read        .dstruct    fs_read_t
+close       .dstruct    fs_close_t
+            .endu
+            .ends            
+
 
 fs_open_t   .struct
 fname       .word       ?   ; Must be first
@@ -323,8 +337,16 @@ cookie      .byte       ?
             .ends
 
 fs_delete_t .struct
-fname       .word       ?   ; Must be first
+fnane       .word       ?   ; Must be first
 fname_len   .byte       ?   ; Must be second
+            .fill       3
+drive       .byte       ?
+cookie      .byte       ?
+            .ends
+
+fs_mkfs_t .struct
+label       .word       ?   ; Must be first
+label_len   .byte       ?   ; Must be second
             .fill       3
 drive       .byte       ?
 cookie      .byte       ?
