@@ -55,7 +55,7 @@ _loop
             beq     _error
 
             lda     event.type
-            cmp     #kernel.event.KEY
+            cmp     #kernel.event.key.PRESSED
             beq     _done
             
             bra     _loop

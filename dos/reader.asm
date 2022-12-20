@@ -79,7 +79,7 @@ _dispatch
             beq     _eof
             cmp     #kernel.event.file.EOF
             beq     _eof
-            cmp     #kernel.event.KEY
+            cmp     #kernel.event.key.PRESSED
             beq     _key
             rts
 

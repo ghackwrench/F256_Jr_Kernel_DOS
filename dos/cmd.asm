@@ -124,19 +124,21 @@ start
             lda     _drive,y
             sta     drive
 
-          ; Build the matching prompt            
+          ; Jump to the command loop
+            jmp     run
+
+_drive      .byte   0,0,1,0
+
+set_prompt
+            ldy     drive
             lda     _letter,y
             sta     prompt_str+0
             lda     #':'
             sta     prompt_str+1
             stz     prompt_str+2
-
-          ; Jump to the command loop
-            jmp     run
-
-_drive      .byte   0,0,1,0
+            rts
 _letter     .text   "$ABA"
-
+            
 print_drives
             lda     drives
             bne     _list
@@ -182,6 +184,8 @@ _next
 
 
 prompt
+            jsr     set_prompt
+            
             ldy     #0
 _loop
             lda     prompt_str,y

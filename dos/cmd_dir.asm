@@ -59,7 +59,7 @@ _dispatch
             beq     _eof
             cmp     #kernel.event.directory.ERROR
             beq     _eof
-            cmp     #kernel.event.KEY
+            cmp     #kernel.event.key.PRESSED
             beq     _key
 
             rts

@@ -119,9 +119,9 @@ ptr         = $fe
 
           ; Event calls
 event_t     .struct
-pending     .byte       ?   ; Negative count of pending events
 dest        .word       ?   ; GetNextEvent copies event data here
-            .ends
+pending     .byte       ?   ; Negative count of pending events
+end         .ends
 
           ; Generic recv
 recv_t      .struct
@@ -260,10 +260,14 @@ event       .namespace
 
             .struct
 RESERVED    .word   ?
-KEY         .word   ?   ; Keyboard event; TODO: namespace and PRESSED/RELEASED.
 MOUSE       .word   ?   ; Mouse event.
 GAME        .word   ?   ; Game Controller changes.
 DEVICE      .word   ?   ; Device added/removed.
+
+key         .namespace
+PRESSED     .word   ?   ; Key pressed
+RELEASED    .word   ?   ; Key released.
+            .endn
 
 block       .namespace
 NAME        .word   ?

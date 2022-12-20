@@ -33,7 +33,7 @@ _event
             bcs     _event
 
             lda     event.type
-            cmp     #kernel.event.KEY
+            cmp     #kernel.event.key.PRESSED
             beq     _kbd
             bra     _loop
             
