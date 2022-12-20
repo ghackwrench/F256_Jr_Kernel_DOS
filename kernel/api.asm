@@ -99,7 +99,7 @@ args        .dstruct    args_t
 
 args_t      .struct
 
-event       .dstruct    event_t ; The GetNextEvent dest address is globally reserved.
+events      .dstruct    event_t ; The GetNextEvent dest address is globally reserved.
 
             .union
 recv        .dstruct    recv_t
@@ -119,6 +119,7 @@ ptr         = $fe
 
           ; Event calls
 event_t     .struct
+pending     .byte       ?   ; Negative count of pending events
 dest        .word       ?   ; GetNextEvent copies event data here
             .ends
 

@@ -100,9 +100,9 @@ _msg
 start
           ; Tell the event call where to dump events.
             lda     #<event
-            sta     kernel.args.event+0
+            sta     kernel.args.events+0
             lda     #>event
-            sta     kernel.args.event+1
+            sta     kernel.args.events+1
 
           ; Get the list of drives
             jsr     kernel.FileSystem.List
