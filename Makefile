@@ -28,5 +28,6 @@ refresh:
 	cp $(KERNEL)/kernel/api.asm kernel/api.asm
 	cp $(KERNEL)/3e.bin kernel
 	cp $(KERNEL)/3f.bin kernel
+	cp $(KERNEL)/kernel.ram kernel
 	
 

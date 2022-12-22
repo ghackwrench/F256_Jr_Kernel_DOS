@@ -15,6 +15,9 @@
             .align      256     ; For the strings.
 Strings     .dsection   strings ; All string pointers in the same page.
             .dsection   code
+            
+*           = $bfff
+            .byte       0       ; Fill an entire 8k block.            
 
 
             .virtual    $0000   ; Zero page
