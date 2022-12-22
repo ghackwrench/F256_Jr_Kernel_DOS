@@ -258,7 +258,7 @@ extlen      .byte       ?
 
 event       .namespace
 
-            .struct
+            .virtual 0
 RESERVED    .word   ?
 MOUSE       .word   ?   ; Mouse event.
 GAME        .word   ?   ; Game Controller changes.
@@ -314,7 +314,7 @@ TCP         .word   ?
 UDP         .word   ?
             .endn
 
-            .ends
+            .endv
 
 event_t     .struct
 type        .byte   ?   ; Enum above
