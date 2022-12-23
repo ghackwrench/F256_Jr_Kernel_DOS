@@ -47,6 +47,7 @@ rm          .null   "rm"
 del         .null   "del"     
 delete      .null   "delete"     
 mkfs        .null   "mkfs"
+keys        .null   "keys"
             .endn
 
 commands
@@ -62,6 +63,7 @@ commands
             .word   words.del,      delete.cmd
             .word   words.delete,   delete.cmd
             .word   words.mkfs,     mkfs.cmd
+            .word   words.keys,     keys.cmd
             .word   0
 
 help
@@ -94,6 +96,7 @@ _msg
             .text   "delete <fname>      Delete <fname>.", $0a
             .text   "mkfs   <label>      Creates a new filesystem on the device.", $0a
             .text   "basic               Starts SuperBASIC.", $0a
+            .text   "keys                Demonstrates key status tracking.", $0a
             .text   "help                Prints this text.", $0a
             .byte   $0
 

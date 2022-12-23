@@ -10,15 +10,17 @@ DOS	= \
 	dos/cmd_rename.asm \
 	dos/cmd_delete.asm \
 	dos/cmd_mkfs.asm \
+	dos/cmd_keys.asm \
 	dos/strings.asm \
 	dos/display.asm \
 	dos/readline.asm \
 	dos/reader.asm \
+	kernel/api.asm
 
-COPT = -C -Wall -Werror -Wno-shadow -x --verbose-list
+COPT = -C -Wall -Werror -Wno-shadow -x --verbose-list -I .
 
-dos_jr.bin: $(DOS) kernel/api.asm
-	64tass $(COPT) $^ -b -L $(basename $@).lst -o $@ -D DATE_STR=\"$(shell date +\"%d-%b-%y\")\"
+dos_jr.bin: $(DOS) kernel/keys.asm
+	64tass $(COPT) $(DOS) -b -L $(basename $@).lst -o $@ -D DATE_STR=\"$(shell date +\"%d-%b-%y\")\"
 	dd if=$@ of=kernel/01.bin ibs=8192 obs=8192 skip=0 count=1
 
 bundle: refresh dos_jr.bin
@@ -29,5 +31,6 @@ refresh:
 	-cp $(KERNEL)/3e.bin kernel
 	-cp $(KERNEL)/3f.bin kernel
 	-cp $(KERNEL)/kernel.ram kernel
+	-cp $(KERNEL)/hardware/keys.asm kernel
 	
 
