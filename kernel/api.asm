@@ -269,6 +269,11 @@ PRESSED     .word   ?   ; Key pressed
 RELEASED    .word   ?   ; Key released.
             .endn
 
+mouse       .namespace
+DELTA       .word   ?   ; Regular mouse move and button state
+CLICKS      .word   ?   ; Click count
+            .endn
+
 block       .namespace
 NAME        .word   ?
 SIZE        .word   ?
@@ -339,12 +344,23 @@ META        = $80       ; Meta key; no associated ASCII value.
             .ends    
             
           ; Data in mouse events
-mouse_t     .struct        
-dx          .byte   ?
-dy          .byte   ?
-dz          .byte   ?
+mouse_t     .struct
+            .union
+delta       .dstruct    kernel.event.m_delta_t
+clicks      .dstruct    kernel.event.m_clicks_t
+            .endu
+            .ends
+m_delta_t   .struct
+x           .byte   ?
+y           .byte   ?
+z           .byte   ?
 buttons     .byte   ?
             .ends
+m_clicks_t  .struct
+inner       .byte   ?
+middle      .byte   ?
+outer       .byte   ?
+            .ends            
 
           ; Data in file events:
 file_t      .struct
