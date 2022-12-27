@@ -11,6 +11,7 @@ DOS	= \
 	dos/cmd_delete.asm \
 	dos/cmd_mkfs.asm \
 	dos/cmd_keys.asm \
+	dos/cmd_exec.asm \
 	dos/strings.asm \
 	dos/display.asm \
 	dos/readline.asm \

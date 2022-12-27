@@ -11,6 +11,19 @@
             .word       0               ; version
             .word       0               ; kernel
             .text       "SuperBasic",0  ; Still acting as SuperBASIC's header
+            
+hello
+            ldy     #0
+_loop
+            lda     _hello,y
+            beq     _done
+            jsr     display.putchar
+            iny
+            bra     _loop
+_done
+            clc
+            rts            
+_hello      .null   "Hello World!"
 
             .align      256     ; For the strings.
 Strings     .dsection   strings ; All string pointers in the same page.

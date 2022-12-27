@@ -48,6 +48,7 @@ del         .null   "del"
 delete      .null   "delete"     
 mkfs        .null   "mkfs"
 keys        .null   "keys"
+exec        .null   "exec"
             .endn
 
 commands
@@ -64,6 +65,7 @@ commands
             .word   words.delete,   delete.cmd
             .word   words.mkfs,     mkfs.cmd
             .word   words.keys,     keys.cmd
+            .word   words.exec,     exec.cmd
             .word   0
 
 help
@@ -97,6 +99,7 @@ _msg
             .text   "mkfs   <label>      Creates a new filesystem on the device.", $0a
             .text   "basic               Starts SuperBASIC.", $0a
             .text   "keys                Demonstrates key status tracking.", $0a
+            .text   "exec   <$hex>       JSR to a program in memory (try $a015).", $0a
             .text   "help                Prints this text.", $0a
             .byte   $0
 
