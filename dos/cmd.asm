@@ -143,7 +143,7 @@ set_prompt
             sta     prompt_str+1
             stz     prompt_str+2
             rts
-_letter     .text   "$ABA"
+_letter     .text   "ABA"
             
 print_drives
             lda     drives

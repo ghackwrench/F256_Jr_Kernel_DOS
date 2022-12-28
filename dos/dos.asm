@@ -39,12 +39,12 @@ io_ctrl     .byte       ?
 reserved    .fill       6
 mmu         .fill       8
             .dsection   dp
+            .dsection   data    ; General data
             .cerror * > $00ff, "Out of dp space."
             .endv
 
             .virtual    $0200   ; Application memory
             .dsection   pages   ; Aligned segments
-            .dsection   data    ; General data
             .endv
 
             .section    code
