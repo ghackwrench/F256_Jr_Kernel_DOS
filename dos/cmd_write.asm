@@ -66,6 +66,8 @@ _dispatch
             beq     _begin
             cmp     #kernel.event.file.WROTE
             beq     _input
+            cmp     #kernel.event.file.ERROR
+            beq     _eof
             cmp     #kernel.event.file.EOF
             beq     _eof
             rts
