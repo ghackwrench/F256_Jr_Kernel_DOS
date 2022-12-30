@@ -49,7 +49,15 @@ _loop       jsr     shift_addr
             dex
             bne     _loop                        
 
-          ; Chain to the address
+          ; call the program
+            jsr     _start
+            
+          ; Soft-restart DOS
+            pla
+            pla
+            jmp     dos.soft
+
+_start
             jmp     (addr)
 
 _error
@@ -100,3 +108,4 @@ _map
 
             .send
             .endn
+            

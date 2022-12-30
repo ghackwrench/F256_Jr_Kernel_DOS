@@ -7,7 +7,7 @@
             .text       $f2,$56         ; Signature
             .byte       4               ; 4 blocks (header + 3 for Basic)
             .byte       5               ; mount at $a000
-            .word       start           ; Start here
+            .word       dos.start       ; Start here
             .word       0               ; version
             .word       0               ; kernel
             .text       "SuperBasic",0  ; Still acting as SuperBASIC's header
@@ -47,6 +47,7 @@ mmu         .fill       8
             .dsection   pages   ; Aligned segments
             .endv
 
+dos         .namespace            
             .section    code
 
 start
@@ -69,6 +70,14 @@ _shell
             jsr     welcome
             jmp     cmd.start
 
+soft
+            jsr     display.init
+            lda     #13
+            jsr     display.putchar
+            lda     #13
+            jsr     display.putchar
+            jmp     cmd.start
+	
 welcome
             phy
             ldy     #0
@@ -99,4 +108,4 @@ basic
             jmp     kernel.Basic    ; Deprecated call; we'll do better later.
 
             .send
-        
+            .endn        

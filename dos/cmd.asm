@@ -58,7 +58,7 @@ commands
             .word   words.read,     read.cmd
             .word   words.write,    write.cmd
             .word   words.dump,     dump.cmd
-            .word   words.basic,    basic
+            .word   words.basic,    dos.basic
             .word   words.rename,   rename.cmd
             .word   words.rm,       delete.cmd
             .word   words.del,      delete.cmd
