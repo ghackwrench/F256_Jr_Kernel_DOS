@@ -13,8 +13,8 @@ OBJS = \
 f256jr.lib: ../lib/f256.lib
 	cp $^ $@
 
-kernel.o: kernel.c kernel.h $(CONFIGS) api.h
-hello.o: hello.c kernel.h
+kernel.o: kernel.c $(CONFIGS) api.h
+hello.o: hello.c
 
 hello.bin: $(OBJS) $(CONFIGS) $(LIBS)
 
