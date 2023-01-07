@@ -16,4 +16,5 @@ Manifest
     kernel/     Contains the latest kernel/api.asm and kernel binary blocks.
     dos/        Contains the source code for a simple demonstration DOS CLI.
     docs/       Will contain actual documentation text when I have time.
+    cc65/       Contains the files needed to build C programs with cc65.
     README      This file.

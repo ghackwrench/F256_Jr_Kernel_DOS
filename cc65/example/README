@@ -1,0 +1,9 @@
+This project consists of a simple "hello world" style hello.c, and a
+kernel.c file which implements enough of the POSIX I/O layer to make
+cc65's stdio layer work.  Some things to note:
+
+    - The Makefile builds hello.bin, which may be run from RAM or flash.
+    - To test, upgrade your kernel, set DIP1, and upload hello.bin to $2000.
+    - Flashable programs include a header; see name.s.
+    - The header includes the file name which will eventually appear in F:.
+    - The header structure is likely to change.

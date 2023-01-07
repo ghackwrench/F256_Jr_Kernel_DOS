@@ -1,0 +1,7 @@
+This directory contains two projects:
+
+    lib         Builds a cc65 library with an f256 specific crt0.
+    example     Builds a sample program with stdio kernel bindings.
+    
+kernel.c should really be re-coded in assembler and moved to lib,
+but it's good enough to get folks started.
