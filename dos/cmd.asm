@@ -13,6 +13,7 @@ event       .dstruct    kernel.event.event_t    ; Event data copied from the ker
 
 cmd         .namespace
         
+            .mkstr  devwait,    "Searching for drives..."
             .mkstr  devlist,    "Drives found: "
             .mkstr  nolist,     "No drives found."
             .mkstr  unknown,    "Unknown command."
@@ -111,6 +112,8 @@ start
             sta     kernel.args.events+1
 
           ; Get the list of drives
+            lda     #devwait_str
+            jsr     puts_cr
             jsr     kernel.FileSystem.List
             sta     drives
 

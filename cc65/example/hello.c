@@ -39,6 +39,7 @@ write_test()
     FILE *fp;
     
     printf("Writing test.txt.\n");
+    printf("Note: IEC drives take a while to recover from reset...\n");
     fp = fopen("test.txt", "w");
     if (fp != NULL) {
         fwrite("test!", 1, 5, fp);
