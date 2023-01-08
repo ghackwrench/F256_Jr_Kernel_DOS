@@ -1,6 +1,6 @@
 always: f256.lib
 
-f256.lib: common.lib crt0.o mainargs.o
+f256.lib: common.lib crt0.o mainargs.o _heap.o
 
 %.o %.lst:%.s
 	ca65 -o $@ $^ -l $(basename $@).lst
