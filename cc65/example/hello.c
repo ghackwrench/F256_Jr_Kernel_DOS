@@ -1,29 +1,47 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-
-      
-
+#include <stdlib.h>
 
 bool
-read_test()
+copy_test(char *src, char *dest)
+{
+    FILE *in, *out;
+    bool ret = false;
+    
+    printf("Copying from %s to %s\n", src, dest);
+    if (in = fopen(src, "r")) {
+        if (out = fopen(dest, "w")) {
+            ret = true;
+            for (;;) {
+                int c = fgetc(in);
+                if (c < 0) {
+                    break;
+                }
+                fputc(c, out);
+            }
+            fclose(out);
+        }
+        fclose(in);
+    }
+    
+    return ret;
+}
+
+bool
+read_test(char *src)
 {
     FILE *fp;
-    char buf[5];
    
-    fp = fopen("test.txt", "r");
+    fp = fopen(src, "r");
     if (fp != NULL) {
-        puts("Reading:");
+        printf("Reading; fp @ %p:", fp);
         for(;;) {
-            int i;
-            int units = fread(&buf, sizeof(buf), 1, fp);
-            if (units <= 0) {
+            int c = fgetc(fp);
+            if (c < 0) {
                 break;
             }
-            for (i = 0; i < sizeof(buf); i++) {
-                putchar(buf[i]);
-            }
-            break;
+            putchar(c);
         }
         fclose(fp);
         return true;
@@ -34,13 +52,13 @@ read_test()
 }    
 
 bool
-write_test()
+write_test(char *dest)
 {
     FILE *fp;
     
     printf("Writing test.txt.\n");
     printf("Note: IEC drives take a while to recover from reset...\n");
-    fp = fopen("test.txt", "w");
+    fp = fopen(dest, "w");
     if (fp != NULL) {
         fwrite("test!", 1, 5, fp);
         fclose(fp);
@@ -49,7 +67,6 @@ write_test()
     
     return false;
 }
- 
 
 int 
 main()
@@ -59,12 +76,23 @@ main()
     putchar(12);  // cls
     printf("Hello world!\n");
     
-    if (write_test()) {
-        printf("Write test succeeded.\n");
-        read_test();
-        puts("");
-    }
+    do {
+        if (!write_test("test.txt")) {
+            printf("Write test failed.\n");
+            break;
+        }
+        if (!copy_test("test.txt", "copy.txt")) {
+            printf("Copy test failed.\n");
+            break;
+        }
+        
+        if (!read_test("copy.txt")) {
+            printf("Read test failed.\n");
+            break;
+        }
+    } while (false);
     
+    puts("");
     printf("Testing getchar(); press CTRL-C to exit.\n");
     while (c != 3) {
         c = getchar();
