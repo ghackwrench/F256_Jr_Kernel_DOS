@@ -74,6 +74,14 @@ main()
     char c = 0;
     
     putchar(12);  // cls
+    puts("");
+    puts("");
+    puts("");
+    puts("");
+    puts("");
+    puts("");
+    puts("");
+    puts("");
     printf("Hello world!\n");
     
     do {
