@@ -5,6 +5,8 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <dirent.h>
+#include <stdbool.h>
 
 #include "api.h"
 
@@ -306,4 +308,156 @@ close(int fd)
     asm("jsr %w", VECTOR(File.Close));
 }
 
+
+static const char *
+path_without_drive(const char *path, char *drive)
+{
+    *drive = 0;
+    
+    if (strlen(path) < 2) {
+        return path;
+    }
+    
+    if (path[1] != ':') {
+        return path;
+    }
+    
+    do {
+        if ((*path >= 'A') && (*path <= 'H')) {
+            *drive = *path - 'A';
+            break;
+        }
+        
+        if ((*path >= 'a') && (*path <= 'h')) {
+            *drive = *path - 'a';
+            break;
+        }
+        
+        if ((*path >= '0') && (*path <= '7')) {
+            *drive = *path - '0';
+            break;
+        }
+    } while (false);
+        
+    return (path + 2);
+}
+    
+////////////////////////////////////////
+// dirent
+
+static char dir_stream;
+
+DIR* __fastcall__ 
+opendir (const char* name)
+{
+    char drive, stream;
+    
+    if (dir_stream) {
+        return NULL;  // Only one at a time.
+    }
+    
+    name = path_without_drive(name, &drive);
+    
+    args.directory.open.drive = drive;
+    args.common.buflen = 0;  // No sub-dir support yet.
+    stream = CALL(Directory.Open);
+    if (error) {
+        return NULL;
+    }
+    
+    for(;;) {
+        event.type = 0;
+        asm("jsr %w", VECTOR(NextEvent));
+        if (event.type == EVENT(directory.OPENED)) {
+            break;
+        }
+        if (event.type == EVENT(directory.ERROR)) {
+            return NULL;
+        }
+    }
+    
+    dir_stream = stream;
+    return (DIR*) &dir_stream;
+}
+
+struct dirent* __fastcall__ 
+readdir(DIR* dir)
+{
+    static char fname[32];  // The kernel supports up to 256.
+    
+    if (!dir) {
+        return NULL;
+    }
+    
+    if (!dir) {
+        return NULL;
+    }
+    
+    args.directory.read.stream = *(char*)dir;
+    CALL(Directory.Read);
+    if (error) {
+        return NULL;
+    }
+    
+    for(;;) {
+        event.type = 0;
+        asm("jsr %w", VECTOR(NextEvent));
+        
+        switch (event.type) {
+        
+        case EVENT(directory.VOLUME):
+        case EVENT(directory.FREE):
+            // dirent doesn't care about these types of records.
+            args.directory.read.stream = *(char*)dir;
+            CALL(Directory.Read);
+            if (!error) {
+                break;
+            }
+            // Fall through.
+        
+        case EVENT(directory.EOF):
+        case EVENT(directory.ERROR):
+            return NULL;
+        
+        case EVENT(directory.FILE): 
+            {
+                int len = event.directory.file.len;
+            
+                if (len >= sizeof(fname)) {
+                    len = sizeof(fname) - 1;
+                }
+            
+                args.common.buf = &fname;
+                args.common.buflen = len;
+                CALL(ReadData);
+                fname[len] = '\0';
+                return (struct dirent*) fname;
+            }
+        }
+    }
+}
+    
+    
+int __fastcall__ 
+closedir (DIR* dir)
+{
+    if (!dir) {
+        return NULL;
+    }
+    
+    for(;;) {
+        if (*(char*)dir) {
+            args.directory.close.stream = *(char*)dir;
+            CALL(Directory.Close);
+            if (!error) {
+                *(char*)dir = 0;
+            }
+        }
+        event.type = 0;
+        asm("jsr %w", VECTOR(NextEvent));
+        if (event.type == EVENT(directory.CLOSED)) {
+            return 0;
+        }
+    }
+}
 

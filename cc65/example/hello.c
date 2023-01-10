@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <dirent.h>
 
 bool
 copy_test(char *src, char *dest)
@@ -57,7 +58,6 @@ write_test(char *dest)
     FILE *fp;
     
     printf("Writing test.txt.\n");
-    printf("Note: IEC drives take a while to recover from reset...\n");
     fp = fopen(dest, "w");
     if (fp != NULL) {
         fwrite("test!", 1, 5, fp);
@@ -72,18 +72,27 @@ int
 main()
 {
     char c = 0;
+    struct DIR *dir;
     
     putchar(12);  // cls
-    puts("");
-    puts("");
-    puts("");
-    puts("");
-    puts("");
-    puts("");
-    puts("");
-    puts("");
-    printf("Hello world!\n");
+    puts("Hello world!");
+    puts("Waiting for IEC init to complete.");
     
+    if (dir = opendir("A:")) {
+        struct dirent *dirent;
+        puts("Directory:");
+        for (;;) {
+            if (dirent = readdir(dir)) {
+                puts(dirent->d_name);
+                continue;
+            }
+            break;
+        }
+        closedir(dir);
+    }
+    
+    
+        
     do {
         if (!write_test("test.txt")) {
             printf("Write test failed.\n");
