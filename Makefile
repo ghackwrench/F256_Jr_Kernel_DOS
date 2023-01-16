@@ -29,9 +29,11 @@ bundle: refresh dos_jr.bin
 # This is target isn't expected to work on your machine.
 refresh:
 	cp $(KERNEL)/kernel/api.asm kernel/api.asm
-	-cp $(KERNEL)/3e.bin kernel
-	-cp $(KERNEL)/3f.bin kernel
-	-cp $(KERNEL)/kernel.ram kernel
-	-cp $(KERNEL)/hardware/keys.asm kernel
+	cp $(KERNEL)/3c.bin kernel
+	cp $(KERNEL)/3d.bin kernel
+	cp $(KERNEL)/3e.bin kernel
+	cp $(KERNEL)/3f.bin kernel
+	cp $(KERNEL)/kernel.ram kernel
+	cp $(KERNEL)/hardware/keys.asm kernel
 	
 

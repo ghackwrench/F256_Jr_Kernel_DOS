@@ -5,6 +5,7 @@ dir         .namespace
             .mkstr      tab,    "    "
             .mkstr      dir,    "  Directory of "
             .mkstr      free,   "  Blocks Free."
+            .mkstr      sorry,  "No media found."
 
             .section    data
 stop        .byte       ?
@@ -12,23 +13,61 @@ stop        .byte       ?
 
             .section    code
 
+set_path
+            lda     readline.token_count
+            cmp     #2
+            bcc     _default
+
+          ; Set the path length
+            lda     #1  ; Token #1
+            jsr     readline.token_length
+            tay
+            beq     _default
+            sta     kernel.args.directory.open.path_len
+
+          ; Set the path pointer (it's conveniently aligned)
+            lda     readline.tokens+1
+            sta     kernel.args.directory.open.path+0
+            lda     #>readline.buf
+            sta     kernel.args.directory.open.path+1
+
+            rts
+            
+_default
+            lda     #<_slash
+            sta     kernel.args.directory.open.path+0
+            lda     #>_slash
+            sta     kernel.args.directory.open.path+1
+            lda     #1
+            sta     kernel.args.directory.open.path_len
+            rts
+_slash      .byte   '/'            
+
 cmd
+            lda     readline.token_count
+            cmp     #3  ; Must be <=2
+            bcs     _done
+
           ; Initialize the stop flag
             stz     stop
 
-          ; Set the drive for open
-            lda     drive
+          ; Set the drive
+            jsr     readline.parse_drive
             sta     kernel.args.directory.open.drive
 
-          ; No path argument yet :).
-            stz     kernel.args.directory.open.fname_len
+          ; Set the path
+            jsr     set_path
 
           ; Open
             jsr     kernel.Directory.Open
             bcc     _loop
             
           ; Invalid device or out-of-memory.
-            rts     ; Return with carry set to indicate error
+            lda     #sorry_str
+            jsr     puts_cr     
+            clc
+_done
+            rts
 
 _loop
             jsr     kernel.Yield        ; Polite, not actually needed.

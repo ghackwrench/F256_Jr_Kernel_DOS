@@ -31,7 +31,7 @@ read_file
             stz     stop
 
           ; Set the drive 
-            lda     drive
+            jsr     readline.parse_drive
             sta     kernel.args.file.open.drive
 
           ; Set the filename (conveniently aligned)
@@ -43,6 +43,7 @@ read_file
           ; Set the filename length
             lda     #1  ; Token #1
             jsr     readline.token_length
+            beq     _error
             sta     kernel.args.file.open.fname_len
 
           ; Set the mode and open.

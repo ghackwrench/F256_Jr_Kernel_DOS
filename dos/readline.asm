@@ -266,6 +266,41 @@ _out
             plx
             rts
             
+parse_drive
+
+          ; Make sure we have an argument
+            lda     token_count
+            cmp     #2
+            bcc     _default
+            
+          ; Make sure it's at least 2 characters
+            lda     #1  ; token 1
+            jsr     token_length
+            cmp     #2
+            bcc     _default
+            
+          ; Consider only <drive><colon> prefixen
+            ldy     readline.tokens+1
+            lda     buf+1,y
+            cmp     #':'
+            bne     _default
+            
+          ; Consider the first character a drive;
+          ; other layers can check if it's valid
+            lda     buf,y
+            dec     a
+            and     #7
+            
+          ; Remove the drive spec from the token
+            inc     tokens+1
+            inc     tokens+1
+            
+            rts
+            
+_default
+            lda     drive   ; Return the default 
+            rts
+
             .send
             .endn
             

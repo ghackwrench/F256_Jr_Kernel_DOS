@@ -18,7 +18,7 @@ cmd
             bne     _done
 
           ; Set the drive
-            lda     drive
+            jsr     readline.parse_drive
             sta     kernel.args.file.open.drive
 
           ; Set the filename pointer (it's conveniently aligned)
@@ -30,6 +30,8 @@ cmd
           ; Set the filename length
             lda     #1  ; Token #1
             jsr     readline.token_length
+            tay
+            beq     _error
             sta     kernel.args.file.open.fname_len
 
           ; Open the file for create/overwrite
@@ -57,8 +59,7 @@ _loop
 _done
             jmp     put_cr
 _error
-        ; The command loop will see that carry is set,
-        ; and print the error message.
+            sec
             rts     
 
 _dispatch

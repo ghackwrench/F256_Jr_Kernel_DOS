@@ -1,0 +1,37 @@
+The 1/16/2023 release adds the following features:
+    - Fat32 SD Card support
+    - IEC sub-directory support
+    - DOS drive select commands (eg 'A:<enter>')
+    - DOS drive prefix paths (eg 'read c:foo.txt')
+    - Further improvements to speed startup.
+    
+THINGS TO NOTE!!!!
+
+    - You MUST upgrade the FPGA core for the SD Card to work.
+    
+    - The SD Card on the Rev A is not yet supported.
+
+    - The kernel is now 32kB -- that's FOUR flash slots!
+
+    - The kernel is only probing the SD Card once, at startup;
+      for now, you will need to reboot when you swap cards.
+      Removing and re-inserting the same card without a reboot
+      will not work!
+
+    - The SPI layer is presently only supporting the latest
+      Rev B board flash (Jan 14th and beyond).  The current
+      Rev A board and flash may be supported in the future.
+
+    - The SPI layer is presently only supporting V2 SD Cards
+      (these are modern HC and XC cards).  Older V1 cards
+      won't work (this is primarily a software limitation).
+
+    - SPI fast-mode is currently not working, but slow-mode 
+      is still 100x faster than IEC :).
+
+    - The FAT layer won't handle off-the-shelf format parameters;
+      you will need to format the card from the Foenix to ensure
+      compatibility.
+
+    - SD Card LED control isn't wired in yet.
+    

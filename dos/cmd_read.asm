@@ -14,7 +14,7 @@ cmd
             lda     #>print
             sta     print_fn+1
 
-            lda     #0  ; Max read size
+            lda     #16 ; Max read size
             ldx     #print_fn
             jmp     reader.read_file
             

@@ -13,12 +13,13 @@ event       .dstruct    kernel.event.event_t    ; Event data copied from the ker
 
 cmd         .namespace
         
-            .mkstr  devwait,    "Searching for drives..."
-            .mkstr  devlist,    "Drives found: "
+            .mkstr  devlist,    "Registered FileSystem devices: "
             .mkstr  nolist,     "No drives found."
             .mkstr  unknown,    "Unknown command."
             .mkstr  failed,     "Command failed."
             .mkstr  help,       "Enter 'help' for help."
+            .mkstr  bad_drive,  "Drive letter must be in [a..h]."
+            .mkstr  no_drive,   "Drive not found."
 
             .section    dp
 eol         .byte       ?
@@ -88,6 +89,7 @@ _done
             rts        
 _msg
             .byte   $0a
+            .text   "<letter>:           Change drive.", $0a
             .text   "ls                  Shows the directory.",$0a
             .text   "dir                 Shows the directory.",$0a
             .text   "read   <fname>      Prints the contents of <fname>.", $0a
@@ -112,8 +114,6 @@ start
             sta     kernel.args.events+1
 
           ; Get the list of drives
-            lda     #devwait_str
-            jsr     puts_cr
             jsr     kernel.FileSystem.List
             sta     drives
 
@@ -124,29 +124,12 @@ start
             lda     #help_str
             jsr     puts_cr
 
-          ; Y = initial drive #
-            lda     drives
-            and     #3  ; Just select the floppies for now.
-            tay
-            
           ; Select the initial drive
-            lda     _drive,y
+            lda     #2  ; C drive
             sta     drive
 
           ; Jump to the command loop
             jmp     run
-
-_drive      .byte   0,0,1,0
-
-set_prompt
-            ldy     drive
-            lda     _letter,y
-            sta     prompt_str+0
-            lda     #':'
-            sta     prompt_str+1
-            stz     prompt_str+2
-            rts
-_letter     .text   "ABA"
             
 print_drives
             lda     drives
@@ -178,6 +161,14 @@ run
             jsr     put_cr
             jsr     prompt
             jsr     readline.read
+            lda     readline.length
+            cmp     #2
+            bne     _cmd
+            lda     readline.buf+1
+            cmp     #':'
+            bne     _cmd
+            jmp     set_drive
+_cmd
             jsr     readline.tokenize
             lda     readline.token_count
             beq     run
@@ -191,6 +182,42 @@ run
 _next
             bra     run
 
+
+set_drive
+            lda     readline.buf
+
+            cmp     #'A'+1  ; <'A'
+            bcc     _nope   
+
+            cmp     #'h'+1  ; >'h'
+            bcs     _nope   
+
+            cmp     #'H'+1  ; <='H'
+            bcc     _set    
+
+            cmp     #'a'    ; >='a'
+            bcs     _set    
+
+_nope
+            lda     #bad_drive_str
+            jsr     strings.puts
+_done
+            jmp     run            
+_set
+            dec     a
+            and     #7
+            tay
+            lda     _bits,y
+            bit     drives
+            beq     _unknown
+
+            sty     drive
+            bra     _done
+_unknown
+            lda     #no_drive_str
+            jsr     strings.puts             
+            jmp     _done
+_bits       .byte   1,2,4,8,16,32,64,128            
 
 prompt
             jsr     set_prompt
@@ -207,6 +234,16 @@ _done
             sty     eol
             rts
              
+set_prompt
+            lda     drive
+            clc
+            adc     #'A'
+            sta     prompt_str+0
+            lda     #':'
+            sta     prompt_str+1
+            stz     prompt_str+2
+            rts
+
 dispatch
             ldx     #0
 _cmd
