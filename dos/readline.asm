@@ -288,7 +288,6 @@ parse_drive
           ; Consider the first character a drive;
           ; other layers can check if it's valid
             lda     buf,y
-            dec     a
             and     #7
             
           ; Remove the drive spec from the token

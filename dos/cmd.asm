@@ -18,7 +18,7 @@ cmd         .namespace
             .mkstr  unknown,    "Unknown command."
             .mkstr  failed,     "Command failed."
             .mkstr  help,       "Enter 'help' for help."
-            .mkstr  bad_drive,  "Drive letter must be in [a..h]."
+            .mkstr  bad_drive,  "Drive number must be in [0..7]."
             .mkstr  no_drive,   "Drive not found."
 
             .section    dp
@@ -125,8 +125,7 @@ start
             jsr     puts_cr
 
           ; Select the initial drive
-            lda     #2  ; C drive
-            sta     drive
+            stz     drive
 
           ; Jump to the command loop
             jmp     run
@@ -143,7 +142,7 @@ _list
             jsr     puts
         
             lda     drives
-            ldx     #'@'
+            ldx     #'0'-1
 _loop        
             lsr     a
             inx
@@ -186,25 +185,12 @@ _next
 set_drive
             lda     readline.buf
 
-            cmp     #'A'+1  ; <'A'
+            cmp     #'0' 
             bcc     _nope   
 
-            cmp     #'h'+1  ; >'h'
+            cmp     #'7'+1 
             bcs     _nope   
 
-            cmp     #'H'+1  ; <='H'
-            bcc     _set    
-
-            cmp     #'a'    ; >='a'
-            bcs     _set    
-
-_nope
-            lda     #bad_drive_str
-            jsr     strings.puts
-_done
-            jmp     run            
-_set
-            dec     a
             and     #7
             tay
             lda     _bits,y
@@ -218,6 +204,12 @@ _unknown
             jsr     strings.puts             
             jmp     _done
 _bits       .byte   1,2,4,8,16,32,64,128            
+
+_nope
+            lda     #bad_drive_str
+            jsr     strings.puts
+_done
+            jmp     run            
 
 prompt
             jsr     set_prompt
@@ -237,7 +229,7 @@ _done
 set_prompt
             lda     drive
             clc
-            adc     #'A'
+            adc     #'0'
             sta     prompt_str+0
             lda     #':'
             sta     prompt_str+1
