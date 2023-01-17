@@ -13,7 +13,7 @@ event       .dstruct    kernel.event.event_t    ; Event data copied from the ker
 
 cmd         .namespace
         
-            .mkstr  devlist,    "Registered FileSystem devices: "
+            .mkstr  devlist,    "Registered File System devices: "
             .mkstr  nolist,     "No drives found."
             .mkstr  unknown,    "Unknown command."
             .mkstr  failed,     "Command failed."
@@ -89,7 +89,7 @@ _done
             rts        
 _msg
             .byte   $0a
-            .text   "<letter>:           Change drive.", $0a
+            .text   "<digit>:            Change drive.", $0a
             .text   "ls                  Shows the directory.",$0a
             .text   "dir                 Shows the directory.",$0a
             .text   "read   <fname>      Prints the contents of <fname>.", $0a
