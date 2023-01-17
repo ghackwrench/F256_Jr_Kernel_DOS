@@ -137,22 +137,39 @@ GETIN()
     }
 }
 
-
+static const char *
+path_without_drive(const char *path, char *drive)
+{
+    *drive = 0;
+    
+    if (strlen(path) < 2) {
+        return path;
+    }
+    
+    if (path[1] != ':') {
+        return path;
+    }
+    
+    do {
+        if ((*path >= '0') && (*path <= '7')) {
+            *drive = *path - '0';
+            break;
+        }
+    } while (false);
+        
+    return (path + 2);
+}
+ 
 int
 open(const char *fname, int mode, ...)
 {
     int ret = 0;
-    uint8_t drive = 0;
-    uint8_t len = strlen(fname);
+    uint8_t drive;
     
-    if ((len > 2) && (fname[1] == ':')) {
-        drive = (fname[0] - 'A') & 7;
-        fname += 2;
-        len -= 2;
-    }        
+    fname = path_without_drive(fname, &drive);
     
     args.common.buf = (uint8_t*) fname;
-    args.common.buflen = len;
+    args.common.buflen = strlen(fname);
     args.file.open.drive = drive;
     if (mode == 1) {
         mode = 0;
@@ -309,39 +326,7 @@ close(int fd)
 }
 
 
-static const char *
-path_without_drive(const char *path, char *drive)
-{
-    *drive = 0;
-    
-    if (strlen(path) < 2) {
-        return path;
-    }
-    
-    if (path[1] != ':') {
-        return path;
-    }
-    
-    do {
-        if ((*path >= 'A') && (*path <= 'H')) {
-            *drive = *path - 'A';
-            break;
-        }
-        
-        if ((*path >= 'a') && (*path <= 'h')) {
-            *drive = *path - 'a';
-            break;
-        }
-        
-        if ((*path >= '0') && (*path <= '7')) {
-            *drive = *path - '0';
-            break;
-        }
-    } while (false);
-        
-    return (path + 2);
-}
-    
+   
 ////////////////////////////////////////
 // dirent
 

@@ -78,7 +78,7 @@ main()
     puts("Hello world!");
     puts("Waiting for IEC init to complete.");
     
-    if (dir = opendir("A:")) {
+    if (dir = opendir("0:")) {
         struct dirent *dirent;
         puts("Directory:");
         for (;;) {
@@ -94,7 +94,7 @@ main()
     
         
     do {
-        if (!write_test("test.txt")) {
+        if (!write_test("0:test.txt")) {
             printf("Write test failed.\n");
             break;
         }
