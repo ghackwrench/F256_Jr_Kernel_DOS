@@ -130,8 +130,8 @@ _done
             ply
             rts        
 _msg
-            .text   "Fat32 https://github.com/commanderx16/x16-rom", $0a
-            .text   "Copyright 2020 Frank van den Hoef, Michael Steil", $0a
+            .text   "Fat32 from https://github.com/commanderx16/x16-rom", $0a
+            .text   "Copyright 2020 Frank van den Hoef and Michael Steil", $0a
             .text   $0a
             .text   "Simple DOS Shell, built ", DATE_STR, $0a
             .text   $0a
