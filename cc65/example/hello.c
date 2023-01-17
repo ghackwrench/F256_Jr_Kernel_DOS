@@ -98,6 +98,12 @@ main()
             printf("Write test failed.\n");
             break;
         }
+
+        if (!read_test("0:test.txt")) {
+            printf("Read test failed.\n");
+            break;
+        }
+
         if (!copy_test("test.txt", "copy.txt")) {
             printf("Copy test failed.\n");
             break;

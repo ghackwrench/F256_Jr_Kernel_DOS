@@ -150,12 +150,9 @@ path_without_drive(const char *path, char *drive)
         return path;
     }
     
-    do {
-        if ((*path >= '0') && (*path <= '7')) {
-            *drive = *path - '0';
-            break;
-        }
-    } while (false);
+    if ((*path >= '0') && (*path <= '7')) {
+        *drive = *path - '0';
+    }
         
     return (path + 2);
 }
