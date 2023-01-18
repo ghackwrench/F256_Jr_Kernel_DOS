@@ -55,6 +55,7 @@ start
         ; display a splash screen, etc.  For now,
         ; we'll keep it simple.
 
+.if false
           ; If dip1 is off, start SuperBASIC
             stz     io_ctrl
             lda     $d670   ; Read Jr dip switch register.
@@ -62,7 +63,7 @@ start
             bit     #1
             bne     _shell
             jmp     basic
-        
+.endif        
 _shell
           ; Start the shell
             jsr     display.init

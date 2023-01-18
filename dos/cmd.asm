@@ -13,7 +13,7 @@ event       .dstruct    kernel.event.event_t    ; Event data copied from the ker
 
 cmd         .namespace
         
-            .mkstr  devlist,    "Registered File System devices: "
+            .mkstr  devlist,    "Registered File-System devices: "
             .mkstr  nolist,     "No drives found."
             .mkstr  unknown,    "Unknown command."
             .mkstr  failed,     "Command failed."
