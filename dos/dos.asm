@@ -66,6 +66,7 @@ start
 .endif        
 _shell
           ; Start the shell
+            jsr     kernel.Display.Reset
             jsr     display.init
             jsr     display.cls
             jsr     welcome
