@@ -254,6 +254,19 @@ _next
             inx
             bra     _cmd
 _fail
+.if true
+          ; See if it's the name of a binary
+            stz     kernel.args.buf+0
+            lda     #>readline.buf
+            sta     kernel.args.buf+1
+            lda     #0
+            jsr     readline.token_length
+            tay
+            lda     #0
+            sta     (kernel.args.buf),y
+            jsr     kernel.RunNamed
+.endif
+          ; If the chain failed, unknown command.
             lda     #unknown_str
             jsr     strings.puts
             jmp     put_cr

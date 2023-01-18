@@ -22,7 +22,7 @@ COPT = -C -Wall -Werror -Wno-shadow -x --verbose-list -I .
 
 dos_jr.bin: $(DOS) kernel/keys.asm
 	64tass $(COPT) $(DOS) -b -L $(basename $@).lst -o $@ -D DATE_STR=\"$(shell date +\"%d-%b-%y\")\"
-	dd if=$@ of=kernel/01.bin ibs=8192 obs=8192 skip=0 count=1
+	dd if=$@ of=kernel/dos.bin ibs=8192 obs=8192 skip=0 count=1
 
 bundle: refresh dos_jr.bin
 

@@ -5,12 +5,12 @@
 
 *           = $a000                     ; Assemble code to run here.
             .text       $f2,$56         ; Signature
-            .byte       4               ; 4 blocks (header + 3 for Basic)
+            .byte       1               ; 1 block
             .byte       5               ; mount at $a000
             .word       dos.start       ; Start here
             .word       0               ; version
             .word       0               ; kernel
-            .text       "SuperBasic",0  ; Still acting as SuperBASIC's header
+            .text       "DOS",0  ; Still acting as SuperBASIC's header
             
 hello
             ldy     #0
@@ -138,8 +138,14 @@ _msg
             .byte   $0
             
 basic
-    ; Exit to SuperBASIC
-            jmp     kernel.Basic    ; Deprecated call; we'll do better later.
+            lda     #<_basic
+            sta     kernel.args.buf+0
+            lda     #>_basic
+            sta     kernel.args.buf+1
+            jsr     kernel.RunNamed
+            sec
+            rts
+_basic      .null   "SuperBASIC"
 
             .send
             .endn        
