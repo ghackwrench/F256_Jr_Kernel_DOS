@@ -161,7 +161,7 @@ int
 open(const char *fname, int mode, ...)
 {
     int ret = 0;
-    uint8_t drive;
+    char drive;
     
     fname = path_without_drive(fname, &drive);
     
@@ -341,7 +341,8 @@ opendir (const char* name)
     name = path_without_drive(name, &drive);
     
     args.directory.open.drive = drive;
-    args.common.buflen = 0;  // No sub-dir support yet.
+    args.common.buf = name;
+    args.common.buflen = strlen(name);
     stream = CALL(Directory.Open);
     if (error) {
         return NULL;
@@ -424,7 +425,7 @@ int __fastcall__
 closedir (DIR* dir)
 {
     if (!dir) {
-        return NULL;
+        return -1;
     }
     
     for(;;) {
@@ -443,3 +444,30 @@ closedir (DIR* dir)
     }
 }
 
+int __fastcall__ 
+remove(const char* name)
+{
+    char drive, stream;
+    
+    name = path_without_drive(name, &drive);
+    args.file.delete.drive = drive;
+    args.common.buf = name;
+    args.common.buflen = strlen(name);
+    stream = CALL(File.Delete);
+    if (error) {
+        return -1;
+    }
+    
+    for(;;) {
+        event.type = 0;
+        asm("jsr %w", VECTOR(NextEvent));
+        if (event.type == EVENT(file.DELETED)) {
+            break;
+        }
+        if (event.type == EVENT(file.ERROR)) {
+            return -1;
+        }
+    }
+    
+    return 0;
+}

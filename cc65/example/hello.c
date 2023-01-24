@@ -113,6 +113,14 @@ main()
             printf("Read test failed.\n");
             break;
         }
+        
+        
+        if (remove("copy.txt") != 0) {
+            printf("delete failed.\n");
+            break;
+        }
+        
+        
     } while (false);
     
     puts("");

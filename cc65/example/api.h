@@ -100,11 +100,11 @@ struct events_t {
 
 struct common_t {
     char     dummy[8-sizeof(struct events_t)];
-    void *   ext;
-    uint8_t  extlen;
-    void *   buf;
-    uint8_t  buflen;
-    void *   internal;
+    const void *  ext;
+    uint8_t       extlen;
+    const void *  buf;
+    uint8_t       buflen;
+    void *        internal;
 };
     
 struct fs_mkfs_t {
