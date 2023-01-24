@@ -471,3 +471,33 @@ remove(const char* name)
     
     return 0;
 }
+
+int __fastcall__ 
+rename(const char* name, const char *to)
+{
+    char drive, stream;
+    
+    name = path_without_drive(name, &drive);
+    args.file.delete.drive = drive;
+    args.common.buf = name;
+    args.common.buflen = strlen(name);
+    args.common.ext = to;
+    args.common.extlen = strlen(to);
+    stream = CALL(File.Rename);
+    if (error) {
+        return -1;
+    }
+    
+    for(;;) {
+        event.type = 0;
+        asm("jsr %w", VECTOR(NextEvent));
+        if (event.type == EVENT(file.RENAMED)) {
+            break;
+        }
+        if (event.type == EVENT(file.ERROR)) {
+            return -1;
+        }
+    }
+    
+    return 0;
+}

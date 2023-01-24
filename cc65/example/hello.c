@@ -104,8 +104,13 @@ main()
             break;
         }
 
-        if (!copy_test("test.txt", "copy.txt")) {
+        if (!copy_test("test.txt", "test2.txt")) {
             printf("Copy test failed.\n");
+            break;
+        }
+        
+        if (rename("test2.txt", "copy.txt") != 0) {
+            printf("rename failed.\n");
             break;
         }
         
