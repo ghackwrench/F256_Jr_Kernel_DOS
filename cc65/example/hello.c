@@ -68,31 +68,36 @@ write_test(char *dest)
     return false;
 }
 
-int 
-main()
+void 
+dir(void)
 {
-    char c = 0;
     struct DIR *dir;
-    
-    putchar(12);  // cls
-    puts("Hello world!");
-    puts("Waiting for IEC init to complete.");
     
     if (dir = opendir("0:")) {
         struct dirent *dirent;
         puts("Directory:");
         for (;;) {
             if (dirent = readdir(dir)) {
-                puts(dirent->d_name);
+                printf("  %6d  %s\n", dirent->d_blocks, dirent->d_name);
                 continue;
             }
             break;
         }
         closedir(dir);
     }
+} 
+
+int 
+main()
+{
+    char c = 0;
     
+    putchar(12);  // cls
+    puts("Hello world!");
+    puts("Waiting for IEC init to complete.");
     
-        
+    dir();
+    
     do {
         if (!write_test("0:test.txt")) {
             printf("Write test failed.\n");

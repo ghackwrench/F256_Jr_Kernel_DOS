@@ -5,10 +5,10 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <dirent.h>
 #include <stdbool.h>
 
 #include "api.h"
+#include "dirent.h"  // Users are expected to "-I ." to get the local copy.
 
 // If cc65 chokes on this line, remove the third argument or upgrade.
 #pragma bss-name (push, "ZEROPAGE", "zp")
@@ -366,7 +366,7 @@ opendir (const char* name)
 struct dirent* __fastcall__ 
 readdir(DIR* dir)
 {
-    static char fname[32];  // The kernel supports up to 256.
+    static struct dirent dirent;
     
     if (!dir) {
         return NULL;
@@ -406,15 +406,20 @@ readdir(DIR* dir)
             {
                 int len = event.directory.file.len;
             
-                if (len >= sizeof(fname)) {
-                    len = sizeof(fname) - 1;
+                if (len >= sizeof(dirent.d_name)) {
+                    len = sizeof(dirent.d_name) - 1;
                 }
             
-                args.common.buf = &fname;
+                args.common.buf = &dirent.d_name;
                 args.common.buflen = len;
                 CALL(ReadData);
-                fname[len] = '\0';
-                return (struct dirent*) fname;
+                dirent.d_name[len] = '\0';
+                
+                args.common.buf = &dirent.d_blocks;
+                args.common.buflen = sizeof(dirent.d_blocks);
+                CALL(ReadExt);
+                
+                return &dirent;
             }
         }
     }
