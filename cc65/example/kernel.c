@@ -383,18 +383,35 @@ readdir(DIR* dir)
     }
     
     for(;;) {
+        
+        int len;
+        
         event.type = 0;
         asm("jsr %w", VECTOR(NextEvent));
         
         switch (event.type) {
         
         case EVENT(directory.VOLUME):
+            
+            dirent.d_blocks = 0;
+            dirent.d_type = 2;
+            break;
+            
+        case EVENT(directory.FILE): 
+            
+            args.common.buf = &dirent.d_blocks;
+            args.common.buflen = sizeof(dirent.d_blocks);
+            CALL(ReadExt);
+                
+            dirent.d_type = (dirent.d_blocks == 0);
+            break;
+                
         case EVENT(directory.FREE):
             // dirent doesn't care about these types of records.
             args.directory.read.stream = *(char*)dir;
             CALL(Directory.Read);
             if (!error) {
-                break;
+                continue;
             }
             // Fall through.
         
@@ -402,26 +419,21 @@ readdir(DIR* dir)
         case EVENT(directory.ERROR):
             return NULL;
         
-        case EVENT(directory.FILE): 
-            {
-                int len = event.directory.file.len;
-            
-                if (len >= sizeof(dirent.d_name)) {
-                    len = sizeof(dirent.d_name) - 1;
-                }
-            
-                args.common.buf = &dirent.d_name;
-                args.common.buflen = len;
-                CALL(ReadData);
-                dirent.d_name[len] = '\0';
-                
-                args.common.buf = &dirent.d_blocks;
-                args.common.buflen = sizeof(dirent.d_blocks);
-                CALL(ReadExt);
-                
-                return &dirent;
-            }
         }
+        
+        // Copy the name.
+        len = event.directory.file.len;
+            
+        if (len >= sizeof(dirent.d_name)) {
+            len = sizeof(dirent.d_name) - 1;
+        }
+            
+        args.common.buf = &dirent.d_name;
+        args.common.buflen = len;
+        CALL(ReadData);
+        dirent.d_name[len] = '\0';
+                
+        return &dirent;
     }
 }
     

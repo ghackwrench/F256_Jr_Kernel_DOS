@@ -46,17 +46,15 @@ typedef struct DIR DIR;
 #define _DE_MAX_NAME
 
 struct dirent {
+    unsigned d_type;
     unsigned d_blocks;
     char d_name[30];  // The kernel supports up to 256.
 };
 
-#define _DE_ISREG(t)  (1)
-#define _DE_ISDIR(t)  (0)
-#define _DE_ISLBL(t)  (0)
+#define _DE_ISREG(t)  (t == 0)
+#define _DE_ISDIR(t)  (t == 1)
+#define _DE_ISLBL(t)  (t == 2)
 #define _DE_ISLNK(t)  (0)
-
-#define DIRFOO 1
-
 
 
 DIR* __fastcall__ opendir (const char* name);

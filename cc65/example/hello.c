@@ -75,11 +75,23 @@ dir(void)
     
     if (dir = opendir("0:")) {
         struct dirent *dirent;
-        puts("Directory:");
         for (;;) {
             if (dirent = readdir(dir)) {
-                printf("  %6d  %s\n", dirent->d_blocks, dirent->d_name);
-                continue;
+                
+                if (_DE_ISREG(dirent->d_type)) {
+                    printf("        %6d  %s\n", dirent->d_blocks, dirent->d_name);
+                    continue;
+                }
+                
+                if (_DE_ISDIR(dirent->d_type)) {
+                    printf("   <DIR>        %s\n", dirent->d_name);
+                    continue;
+                }
+                
+                if (_DE_ISLBL(dirent->d_type)) {
+                    printf("Directory of %s\n", dirent->d_name);
+                    continue;
+                }
             }
             break;
         }
