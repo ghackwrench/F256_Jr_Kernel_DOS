@@ -21,7 +21,7 @@ Copies the next event from the kernel's event queue into a user provided event b
 
 * **kernel.args.events** is a reserved field in the argument block; nothing else uses this space, so you need only initialize this pointer once on startup.
 * **kernel.args.pending** contains the count of pending events (negated for ease of testing with BIT).  You can save considerable CPU time by testing **kernel.args.pending** and only calling **NextEvent** if it is non-zero.
-* The kernel reports almost evenything through events.  Consider keeping the event buffer in the zeropage for effecient access.
+* The kernel reports almost everything through events.  Consider keeping the event buffer in the zeropage for efficient access.
 
 ### ReadData
 Copies data from the kernel buffer associated with the current event into the user's address space.
@@ -37,7 +37,7 @@ Copies data from the kernel buffer associated with the current event into the us
 
 **Effect**
 
-* The contents of the current event's primarny buffer are copied into the provided user buffer.
+* The contents of the current event's primary buffer are copied into the provided user buffer.
 * If the event doesn't contain a buffer, zeros are copied.
 
 
