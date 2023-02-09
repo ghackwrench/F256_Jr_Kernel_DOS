@@ -158,8 +158,8 @@ Opens a file for read, append, or create/overwrite.  The file should not be conc
 
 **Events**
 
-* On a successful open/create/append, the kernel will queue a file.OPENED event.
-* For read or append, if the file does not exist, the kernel will queue a file.NOT_FOUND event.
+* On a successful open/create/append, the kernel will queue a **file.OPENED** event.
+* For read or append, if the file does not exist, the kernel will queue a **file.NOT_FOUND** event.
 * File events contain the stream id (in **event.file.stream**) and the user supplied cookie (in **event.file.cookie**).
 
 **Notes**
@@ -224,7 +224,7 @@ Writes bytes to a file opened for writing.
 
 **Notes**
 
-* As with POSIX, the kernel may write fewer bytes than requested.  This is not an error.  When it happens, the user is expected to simply call **File.Read** again to get more data.
+* As with POSIX, the kernel may write fewer bytes than requested.  This is not an error.  When it happens, the user is expected to simply call **File.Write** again to write more data.
 
 * To reduce the risk of losing events while reading data from IEC devices, IEC write transfers are artificially limited to 64 bytes at a time.  This limit may be lifted once we have interrupt driven IEC transfers.
 
