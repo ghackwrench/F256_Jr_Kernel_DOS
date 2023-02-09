@@ -35,5 +35,6 @@ refresh:
 	cp $(KERNEL)/3f.bin kernel
 	cp $(KERNEL)/kernel.ram kernel
 	cp $(KERNEL)/hardware/keys.asm kernel
+	cp $(KERNEL)/docs/* kernel
 	
 
