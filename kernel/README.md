@@ -98,9 +98,9 @@ The F256 machines were designed for games, and the 6502 TinyCore MicroKernel was
 Games generally run in a simple loop:
 
 1. Update the screen
-* Read the controls
-* Update the game state
-* Goto 1
+2. Read the controls
+3. Update the game state
+4. Goto 1
 
 The kernel supports this mode of operation by replacing step 2 above (read the controls) with a generic kernel call: **NextEvent**.  **NextEvent** gets the next I/O event from the kernel's queue and copies it into a user provided buffer.  
 
