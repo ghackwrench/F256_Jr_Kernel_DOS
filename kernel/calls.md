@@ -407,10 +407,6 @@ Determines if the packet in the current event belongs to the provided socket.
 * Carry cleared if the socket matches the packet.
 * Carry set if the socket does not match the packet.
 
-**Notes**
-
-* This function is currently available as **Network.TCP.Match** -- it needs to be moved here.
-
 ## Network Calls - UDP
 
 ### Network.UDP.Init
