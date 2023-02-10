@@ -1,3 +1,244 @@
+# The TinyCore 65c02 MicroKernel<br>F256(K) Edition
+
+The TinyCore 6502 MicroKernel for the Foenix F256/F256K line of computers is a powerful alternative to the typical BIOS style kernels that come with most 8-bit computers.  This kernel offers the following features:
+
+* An event-based programming model for real-time games and VMs.
+* A network stack supporting multiple concurrent TCP and UDP sockets.
+* Drivers for optional ESP8266 based wifi modules.
+* Drivers for IEC drives.
+* Drivers for Fat32 formatted SD Cards.
+* Support for PS2 keyboards, Foenix keyboards, and CBM keyboards
+* Support for PS2 scroll mice.
+* Preemptive kernel multi-tasking (no need to yield). 
+
+The TinyCore 65c02 MicroKernel is Copyright 2022 Jessie Oberreuter<br>
+The Fat32 library is Copyright 2020 Frank van den Hoef & Michael Steil  
+
+There's a lot of love in here; I hope you will enjoy using it as much as I have enjoyed writing it!  - Gadget.
+
+
+# Setup and Installation
+
+### Getting the Kernel
+
+Kernel binaries may be optained from either of the following repos: 
+
+*  https://github.com/ghackwrench/F256_Jr_Kernel_DOS
+*  https://github.com/paulscottrobson/superbasic
+
+The 'ghackwrench' repo contains the latest release.  The 'paulscottrobson' repo contains the latest version verified to work with SuperBASIC.
+
+### Flashing the Kernel
+
+The kernel consists of four 8k blocks which must be flashed into the last four blocks of the F256.  Using the F256 Programmer Tool (Windows), the kernel needs to be flashed into Flash Blocks $3C-$3F.  Alternately, the SuperBASIC repo contains a script which uses a python based loader to install SuperBASIC along with the Kernel.
+
+### DIP Switches
+
+The kernel assigns the DIP switches as follows:
+
+1. Enable boot-from-RAM
+2. Reserved (potentially for SNES gamepad support)
+3. Enable SLIP based networking
+4. Feather board installed (eg Huzzah 8266 WiFi)
+5. SIDs are installed
+6. F256: CBM keyboard installed; F256k: audio expansion installed.
+7. ON: 640x480, OFF: 640x400 (_not yet implemented_)
+8. Enable gamma color correction
+
+When boot-from-RAM is enabled, the kernel will search the first 48k of RAM for pre-loaded programs before starting the first program in on the expansion cartridge or the first program in flash.
+
+### Support Software
+
+- The superbasic repo contains a powerful BASIC programming language which has been ported to run on the MicroKernel.
+
+- The Kernel_DOS repo includes a simple DOS CLI which demonstrates most kernel functions.
+
+- The Kernel_DOS repo also contains library and config files for compiling C programs with cc65 for use with the MicroKernel.
+
+# Memory Model
+
+The F256 series machines minimally reserve addresses $00 and $01 for memory and I/O control.  Programs may optionally enable additional hardware registers from $08-$0f.
+
+The MicroKernel uses 16 bytes of the Zero page, from $f0-$ff, for the kernel.args struct.  Kernel calls do not expect their arguments to come in registers.  Instead, all kernel arguments are passed by writing them to variables in kernel.args.  The **A** register is used by all kernel calls.  The **X** and **Y** registers, however, are always preserved.  All kernel calls clear the carry on success and set the carry on failure.  A few calls return a stream id in **A** as a convenience, but most of the time, **A** should just be considered undefined upon return from the kernel.
+
+Outside of the above, user programs are free to use all addresses up to $C000 as they wish.
+
+$C000-$DFFF is the I/O window.  The I/O window can be disabled to reveal RAM underneath, but programs should refrain from doing so, as this RAM is used by the kernel.  Programs are generally free to use the hardware as they see fit, but note that, by default, the kernel takes ownership of the PS2 ports, the frame interrupt, and the RTC interrupt, and will take ownership of the serial port if either the SLIP or Feather DIP switches are set.
+
+$E000-$FFFF contains the kernel itself.  The kernel is considerably larger than 8kB, but the kernel uses the F256 MMU hardware to keep its footprint in the user's memory map to a relative minimum.
+
+The F256 machines support four concurrent memory maps.  The kernel reserves map zero for itself, and map one for the Fat32 drivers; user programs are run from map three.  Map two is potentially reserved for a hypervisor. 
+
+The kernel uses only two 8k blocks of RAM: block 6 (nominally at $C000), and block 7 (nominally at $E000).  Everything else is free for use by user software.
+
+# Startup
+
+On power-on or reset, the kernel initializes the hardware according to the DIP switches and then searches various memory regions for the first program to run.  If DIP1 is on, it first checks RAM blocks 1-5 for a pre-loaded binary.  After that, it searches the expansion RAM/ROM blocks, and, finally, the on-board flash blocks. The first block found with a valid header will be mapped into MMU 3 and started.  The header must appear at the very start of the block and contains the following fields:
+
+```
+Byte  0    signature: $F2
+Byte  1    signature: $56
+Byte  2    the size of program in 8k blocks
+Byte  3    the starting slot of the program (ie where to map it)
+Bytes 4-5  the start address of the program
+Bytes 6-9  reserved
+Bytes 10-  the zero-terminated name of the program.
+```   
+
+# Programming
+
+With a 65c02 installed, the F256 machines can generally be treated as simple 6502 machines.  Programs have full access to the RAM from $0000-$BFFF, and full access to I/O from $C000-$DFFF.  More adventurous programs can enable the MMU registers and bank additional memory into any 8k slot below $C000.  Really adventurous programs are free to disable interrupts, map out the kernel, and take complete control over the machine.  Programs wishing to use the kernel, however, should be sure to keep interrupts enabled as much as possible, call **NextEvent** often enough that the kernel doesn't run out of event objects, and refrain from trashing MMU LUT0, MMU LUT1, and the RAM between $C000 and $FFFF.
+
+The kernel interfaces are described below using their symbolic names.  The actual values and addresses must be obtained by including either api.asm or api.h in your project.
+
+# Events
+
+The F256 machines were designed for games, and the 6502 TinyCore MicroKernel was designed to match.
+
+Games generally run in a simple loop:
+
+1. Update the screen
+* Read the controls
+* Update the game state
+* Goto 1
+
+The kernel supports this mode of operation by replacing step 2 above (read the controls) with a generic kernel call: **NextEvent**.  **NextEvent** gets the next I/O event from the kernel's queue and copies it into a user provided buffer.  
+
+
+### Setup
+
+Events are 8-byte packets.  Each packet contains four common bytes, and up to four event-specific bytes.  The user's buffer for these bytes may be placed anywhere, but since they are accessed frequently, the zero page is a good place.  
+
+Before a program can receive events, it must tell the kernel where events should be copied.  It does this by writing the address of an 8-byte buffer into the kernel's arg block:
+
+```
+			.section zp
+event		.dstruct	 kernel.event.event_t
+			.send
+
+			.section code
+
+init_events
+
+			lda     #<event
+			sta     kernel.args.events+0
+			lda     #>event
+			sta     kernel.args.events+1
+			rts
+``` 
+
+### Handling 
+For games, and other real-time applications, a program will typically contain a single "handle_events" routine:
+
+```
+handle_events
+
+          ; Peek at the queue to see if anything is pending
+            lda		kernel.events.pending  ; Negated count
+            bpl		_done
+
+		  ; Get the next event.
+		    jsr		kernel.NextEvent
+		    bcs		_done
+
+          ; Handle the event
+            jsr		_dispatch
+            
+          ; Continue until the queue is drained.
+            bra		handle_events
+            
+_done       rts
+
+_dispatch
+
+          ; Get the event's type
+            lda		event.type
+    					
+		  ; Call the appropriate handler
+
+			cmp		#kernel.event.key.PRESSED
+			beq		_key_pressed
+
+			cmp		#kernel.event.mouse.DELTA
+			beq		_mouse_moved
+			
+			...
+			rts     ; Anything not handled can be ignored.
+```
+
+Other types of programs may eschew the use of a single central event handler, and instead work the queue only when waiting for events, and then only to handle the event types expected for the operation.  The F256 cc65 kernel library does just this: when waiting for keypresses, it only handles key events; when waiting for data from a file, it only handles file.DATA/EOF/ERROR events and ignores all others.  This approach is considerably simpler but also considerably less powerful.
+
+### Event types
+
+Events belong to one of two categories: **Solicited Events** and **Unsolicited Events**.  
+
+**Solicited Events** are events which are generated in response to I/O requests (eg file Open/Read/Close calls).  **Unsolicited Events** are generated by external devices such as keyboards, joysticks, and mice.  **Unsolicited Events** are also generated whenever packets are received from the network.
+
+#### Solicited Events
+
+The **solicited events** are described in the **Kernel Calls** section below.  The documentation for each kernel call that queues an event includes a description of the possible events.
+
+#### Unsolicited Events
+
+**event.key.PRESSED**<br>
+**event.key.RELEASED**
+
+These events occur whenever a key is pressed or released:
+
+* **event.key.keyboard** contains the id of the keyboard.
+* **event.key.raw** contains the raw key-code (see kernel/keys.asm).
+* **event.key.flags** is negative if this is a meta (non-ascii) key.
+* **event.key.ascii** contains the ascii interpretation if available.
+
+**event.mouse.DELTA**
+
+This event is generated every time the mouse is moved or a button changes state.
+
+* **event.mouse.delta.x** contains the x delta.
+* **event.mouse.delta.y** contains the y delta.
+* **event.mouse.delta.z** contains the z (scroll) delta.
+* **event.mouse.delta.buttons** contains the button bits.
+
+The buttons are encoded as follows:
+
+* Bit 0 (1) is the inner-most button
+* Bit 1 (2) is the middle button
+* Bit 2 (4) is the outer-most button
+
+The bits are set when the button is pressed and cleared when the botton is released.
+
+To change the "handedness" of the mouse, simply place it in whichever hand you prefer, and double-click!  
+
+**event.mouse.CLICKS**
+
+This event reports mouse click (press-and-release) events.  Whenever a mouse button is pressed, the kernel starts a 500ms timer and counts the number of times each button is both pressed and released.  At the end of the 500ms, the counts are reported:
+
+* **event.mouse.clicks.inner** contains the count of inner clicks.
+* **event.mouse.clicks.middle** contains the count of middle clicks.
+* **event.mouse.clicks.outer** contains the count of outer clicks.
+
+A report of all zeros indicates that a press-and-hold is in progress; programs should consult the most recent event.mouse.DELTA event to determine which button(s) are being held. 
+
+**event.JOYSTICK**
+
+This event returns the state of the "buttons" for each of the two joysticks whenever either's state changes:
+
+* **event.joystick.joy0** contains the bits for Joystick 0.
+* **event.joystick.joy1** contains the bits for Joystick 1.
+
+The bits are set when the associated switch is pressed, and clear when released.
+
+**event.TCP**<br>
+**event.UDP**<br>
+**event.ICMP**
+
+These events are generated whenever a network packet of the given type is received.  For TCP and UDP packets, a program can use the **kernel.Net.Match** call to see if the packet matches an open socket.  Non-matching UDP packets can be ignored; network aware programs should respond to unmatched TCP packets by calling **kernel.Net.TCP.Reject**.
+TCP and UDP payloads may be read by calling **kernel.Net.TCP.Recv** and **kernel.Net.UDP.Recv** respectively.  For ICMP packets, programs can get the raw data by calling **kernel.ReadData**.   
+
+
+
+# Kernel Calls
+
 ## Generic Calls
 
 ### NextEvent
