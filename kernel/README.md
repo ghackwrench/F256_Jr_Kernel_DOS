@@ -45,7 +45,7 @@ The kernel assigns the DIP switches as follows:
 7. ON: 640x480, OFF: 640x400 (_not yet implemented_)
 8. Enable gamma color correction
 
-When boot-from-RAM is enabled, the kernel will search the first 48k of RAM for pre-loaded programs before starting the first program in on the expansion cartridge or the first program in flash.
+When boot-from-RAM is enabled, the kernel will search the first 48k of RAM for pre-loaded programs before starting the first program on the expansion cartridge or the first program in flash.
 
 ### Support Software
 
