@@ -65,7 +65,7 @@ Outside of the above, user programs are free to use all addresses up to $C000 as
 
 $C000-$DFFF is the I/O window.  The I/O window can be disabled to reveal RAM underneath, but programs should refrain from doing so, as this RAM is used by the kernel.  Programs are generally free to use the hardware as they see fit, but note that, by default, the kernel takes ownership of the PS2 ports, the frame interrupt, and the RTC interrupt, and will take ownership of the serial port if either the SLIP or Feather DIP switches are set.
 
-$E000-$FFFF contains the kernel itself.  The kernel is considerably larger than 8kB, but the kernel uses the F256 MMU hardware to keep its footprint in the user's memory map to a relative minimum.
+$E000-$FFFF contains the kernel itself.  The kernel is considerably larger than 8kB, but it uses the F256 MMU hardware to keep its footprint in the user's memory map to a relative minimum.
 
 The F256 machines support four concurrent memory maps.  The kernel reserves map zero for itself, and map one for the Fat32 drivers; user programs are run from map three.  Map two is potentially reserved for a hypervisor. 
 
