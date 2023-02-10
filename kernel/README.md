@@ -112,19 +112,19 @@ Events are 8-byte packets.  Each packet contains four common bytes, and up to fo
 Before a program can receive events, it must tell the kernel where events should be copied.  It does this by writing the address of an 8-byte buffer into the kernel's arg block:
 
 ```
-			.section zp
+		.section zp
 event		.dstruct	 kernel.event.event_t
-			.send
+		.send
 
-			.section code
+		.section code
 
 init_events
 
-			lda     #<event
-			sta     kernel.args.events+0
-			lda     #>event
-			sta     kernel.args.events+1
-			rts
+		lda     #<event
+		sta     kernel.args.events+0
+		lda     #>event
+		sta     kernel.args.events+1
+		rts
 ``` 
 
 ### Handling 
@@ -137,9 +137,9 @@ handle_events
             lda		kernel.events.pending  ; Negated count
             bpl		_done
 
-		  ; Get the next event.
-		    jsr		kernel.NextEvent
-		    bcs		_done
+	  ; Get the next event.
+	    jsr		kernel.NextEvent
+	    bcs		_done
 
           ; Handle the event
             jsr		_dispatch
@@ -154,16 +154,16 @@ _dispatch
           ; Get the event's type
             lda		event.type
     					
-		  ; Call the appropriate handler
+	  ; Call the appropriate handler
 
-			cmp		#kernel.event.key.PRESSED
-			beq		_key_pressed
+	    cmp		#kernel.event.key.PRESSED
+	    beq		_key_pressed
 
-			cmp		#kernel.event.mouse.DELTA
-			beq		_mouse_moved
+	    cmp		#kernel.event.mouse.DELTA
+	    beq		_mouse_moved
 			
-			...
-			rts     ; Anything not handled can be ignored.
+	    ...
+	    rts     ; Anything not handled can be ignored.
 ```
 
 Other types of programs may eschew the use of a single central event handler, and instead work the queue only when waiting for events, and then only to handle the event types expected for the operation.  The F256 cc65 kernel library does just this: when waiting for keypresses, it only handles key events; when waiting for data from a file, it only handles file.DATA/EOF/ERROR events and ignores all others.  This approach is considerably simpler but also considerably less powerful.
