@@ -51,6 +51,8 @@ delete      .null   "delete"
 mkfs        .null   "mkfs"
 keys        .null   "keys"
 exec        .null   "exec"
+mkdir       .null   "mkdir"     
+rmdir       .null   "rmdir"     
             .endn
 
 commands
@@ -68,6 +70,8 @@ commands
             .word   words.mkfs,     mkfs.cmd
             .word   words.keys,     keys.cmd
             .word   words.exec,     exec.cmd
+            .word   words.mkdir,    mkdir.cmd
+            .word   words.rmdir,    rmdir.cmd
             .word   0
 
 help

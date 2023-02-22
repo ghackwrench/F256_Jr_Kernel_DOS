@@ -10,6 +10,8 @@ DOS	= \
 	dos/cmd_rename.asm \
 	dos/cmd_delete.asm \
 	dos/cmd_mkfs.asm \
+	dos/cmd_mkdir.asm \
+	dos/cmd_rmdir.asm \
 	dos/cmd_keys.asm \
 	dos/cmd_exec.asm \
 	dos/strings.asm \
@@ -29,6 +31,7 @@ bundle: refresh dos_jr.bin
 # This is target isn't expected to work on your machine.
 refresh:
 	cp $(KERNEL)/kernel/api.asm kernel/api.asm
+	cp $(KERNEL)/3b.bin kernel
 	cp $(KERNEL)/3c.bin kernel
 	cp $(KERNEL)/3d.bin kernel
 	cp $(KERNEL)/3e.bin kernel
