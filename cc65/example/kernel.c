@@ -418,7 +418,8 @@ readdir(DIR* dir)
         case EVENT(directory.EOF):
         case EVENT(directory.ERROR):
             return NULL;
-        
+            
+        default: continue;
         }
         
         // Copy the name.

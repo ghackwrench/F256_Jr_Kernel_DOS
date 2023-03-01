@@ -15,14 +15,14 @@
 
 struct call {  // Mount at $ff00
     
-    long NextEvent;  // Copy the next event into user-space.
-    long ReadData;   // Copy primary bulk event data into user-space
-    long ReadExt;    // Copy secondary bolk event data into user-space
-    long Yield;      // Give unused time to the kernel.
-    long Putch;      // deprecated
-    long Basic;      // deprecated
-    long dummy1;     // reserved
-    long dummy2;     // reserved
+    long NextEvent;      // Copy the next event into user-space.
+    long ReadData;       // Copy primary bulk event data into user-space
+    long ReadExt;        // Copy secondary bolk event data into user-space
+    long Yield;          // Give unused time to the kernel.
+    long Putch;          // deprecated
+    long RunBlock;       // 
+    long RunNamed;       //
+    long reserved;
     
     struct {
         long List;       // Returns a bit-set of available block-accessible devices.
@@ -52,43 +52,55 @@ struct call {  // Mount at $ff00
         long Close;      // Close an open file.
         long Rename;     // Rename a closed file.
         long Delete;     // Delete a closed file.
+        long Seek;       // Set the next read/write position within an open file.
     } File;
     
     struct {
         long Open;       // Open a directory for reading.
         long Read;       // Read a directory entry; may also return VOLUME and FREE events.
         long Close;      // Close a directory once finished reading.
+        long MkDir;      // Create a new directory.
+        long RmDir;      // Deletes an existing directory.
     } Directory;
     
     long gate;    
-    
-    struct {
-        long GetSize;    // Returns rows/cols in kernel args.
-        long DrawRow;    // Draw text/color buffers left-to-right
-        long DrawColumn; // Draw text/color buffers top-to-bottom
-    } Display;
     
     struct {
         long GetIP;      // Get the local IP address.
         long SetIP;      // Set the local IP address.
         long GetDNS;     // Get the configured DNS IP address.
         long SetDNS;     // Set the configured DNS IP address.
-        long GetTime;    //
-        long SetTime;    //
-        long GetSysInfo; //
-        long SetBPS;     // Set the serial BPS (should match the SLIP router's speed).
-    } Config;
+        long SendICMP;   // Send an ICMP packet (typically a ping).
+        long Match;      // Determine if the current event matches a specific socket.
+        
+        struct {
+            long Init;   // Initialize a 32 byte UDP socket structure.
+            long Send;   // Send data via the supplied UDP socket structure.
+            long Recv;   // Copy the UDP payload from the event to the user's address space.
+        } UDP;
+        
+        struct {
+            long Open;   // Initialize a 256 byte TCP structure for a specified destination.
+            long Accept; // Initialize a 256 byte TCP structure from a received SYN packet. 
+            long Reject; // Reply to a received TCP packet with a REJECT message.
+            long Send;   // Accept some new data and send an ACK along with any unACK'd data.
+            long Recv;   // Copy any new TCP bytes into the user's buf and update the socket state.
+        } TCP;
+    };
     
     struct {
-        long InitUDP;    //
-        long SendUDP;    //
-        long RecvUDP;    //
-        long InitTCP;    //
-        long SendTCP;    //
-        long RecvTCP;    //
-        long SendICMP;   //
-        long RecvICMP;   //
-    } Net;
+        long Reset;      // Re-init the display.
+        long GetSize;    // Returns rows/cols in kernel args.
+        long DrawRow;    // Draw text/color buffers left-to-right
+        long DrawColumn; // Draw text/color buffers top-to-bottom
+    } Display;
+    
+    struct {
+        long GetTime;    // Get the date+time in BCD: YY,YY,MM,DD,HH,MM,SS,cS
+        long SetTime;    //
+        long GetSysInfo; //
+        long SetBPS;     //
+    } Config;
 };
 
 // Kernel Call Arguments; mount at $f0
@@ -164,6 +176,12 @@ struct fs_delete_t {
     // fname_len   = args.buflen
 };
 
+struct fs_seek_t {
+    uint8_t  streak;
+    uint8_t  cookie;
+    uint32_t position;
+};
+
 struct file_t {
     union {
         struct fs_open_t    open;
@@ -172,6 +190,7 @@ struct file_t {
         struct fs_close_t   close;
         struct fs_rename_t  rename;
         struct fs_delete_t  delete;
+        struct fs_seek_t    seek;
     };
 };
 
@@ -196,6 +215,8 @@ struct dir_t {
         struct dir_open_t   open;
         struct dir_read_t   read;
         struct dir_close_t  close;
+        struct dir_open_t   mkdir;
+        struct dir_open_t   rmdir;
     };
 };
 
@@ -272,6 +293,7 @@ struct events {
         uint16_t RENAMED;
         uint16_t DELETED;
         uint16_t ERROR;
+        uint16_t SEEK;
     } file;
     
     struct {
@@ -283,6 +305,15 @@ struct events {
         uint16_t CLOSED;
         uint16_t ERROR;
     } directory;
+    
+    struct {
+        uint16_t TCP;
+        uint16_t UDP;
+    } net;
+    
+    struct {
+        uint16_t TICK;
+    } clock;
 };
 
                  

@@ -35,7 +35,7 @@ _event
             lda     event.type
             cmp     #kernel.event.key.PRESSED
             beq     _kbd
-            bra     _loop
+            bra     _event
             
 _kbd
             lda     event.key.ascii

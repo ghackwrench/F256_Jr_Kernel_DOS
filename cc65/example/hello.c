@@ -108,9 +108,10 @@ main()
     puts("Hello world!");
     puts("Waiting for IEC init to complete.");
     
-    dir();
-    
     do {
+        
+        dir();
+    
         if (!write_test("0:test.txt")) {
             printf("Write test failed.\n");
             break;

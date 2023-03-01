@@ -235,7 +235,9 @@ The bits are set when the associated switch is pressed, and clear when released.
 These events are generated whenever a network packet of the given type is received.  For TCP and UDP packets, a program can use the **kernel.Net.Match** call to see if the packet matches an open socket.  Non-matching UDP packets can be ignored; network aware programs should respond to unmatched TCP packets by calling **kernel.Net.TCP.Reject**.
 TCP and UDP payloads may be read by calling **kernel.Net.TCP.Recv** and **kernel.Net.UDP.Recv** respectively.  For ICMP packets, programs can get the raw data by calling **kernel.ReadData**.   
 
+**event.clock.TICK**
 
+This event is generated every second for general time reference.
 
 # Kernel Calls
 
@@ -469,6 +471,30 @@ Writes bytes to a file opened for writing.
 
 * To reduce the risk of losing events while reading data from IEC devices, IEC write transfers are artificially limited to 64 bytes at a time.  This limit may be lifted once we have interrupt driven IEC transfers.
 
+### File.Seek
+
+Changes the position of the next read or write within a file.
+
+**Input**
+
+* **kernel.args.file.seek.stream** contains the stream ID of the file (the stream is returned in the file.OPENED event and from the File.Open call itself).
+* **kernel.args.file.seek.offset** contains the 32-bit file offset.
+
+**Output**
+
+* Carry cleared on success.
+* Carry set on error (the kernel is out of event objects).
+
+**Events**
+
+* On a successful write, the kernel will queue an **event.file.SEEK** event.
+* On error, the kernel will queue an **event.file.ERROR** event.
+* In all cases, the event will also contain the stream id in **event.file.stream** and the the user's cookie in **event.file.cookie**.
+
+**Notes**
+
+* This is presently implemented only for fat32.  It is potentially available on the SD2IEC.
+
 ### File.Close
 
 Closes an open file.
@@ -632,6 +658,63 @@ Reads the next directory element (volume name entry, file entry, bytes-free entr
 
 * Do not attempt to make further calls against the same stream id after calling Directory.Close -- the stream will be returned to the kernel for allocation to subsequent file operations.
 
+### Directory.MkDir
+
+Creates a sub-directory.
+
+**Input**
+
+* **kernel.args.directory.mkdir.drive** contains the device id (0 = SD, 1 = IEC #8, 2 = IEC #9).
+* **kernel.args.directory.mkdir.path** points to a buffer containing the path.
+* **kernel.args.directory.mkdir.path_len** contains the length of the path above.  May be zero for the root directory.
+* **kernel.args.directory.mkdir.cookie** contains a user-supplied cookie for matching the completed event.
+
+**Output**
+
+* Carry cleared on success.
+* Carry set on error (device not found, kernel out of event or stream objects).
+
+**Events**
+
+* On successful completion, the kernel will queue an **event.directory.CREATED** event.
+* On error, the kernel will queue an **event.directory.ERROR** event.
+* In either case, **event.directory.cookie** will contain the above cookie.
+
+**Notes**
+
+* Not supported by all IEC devices.
+* The IEC protocol only supports one command (mkdir, rmdir, rename, delete) per device at a time.  The kernel does not, however, prevent you from trying.  Consider yourself warned.
+
+
+### Directory.RmDir
+
+Deletes a sub-directory.
+
+**Input**
+
+* **kernel.args.directory.rmdir.drive** contains the device id (0 = SD, 1 = IEC #8, 2 = IEC #9).
+* **kernel.args.directory.rmdir.path** points to a buffer containing the path.
+* **kernel.args.directory.rmdir.path_len** contains the length of the path above.  May be zero for the root directory.
+* **kernel.args.directory.rmdir.cookie** contains a user-supplied cookie for matching the completed event.
+
+**Output**
+
+* Carry cleared on success.
+* Carry set on error (device not found, kernel out of event or stream objects).
+
+**Events**
+
+* On successful completion, the kernel will queue an **event.directory.CREATED** event.
+* On error, the kernel will queue an **event.directory.ERROR** event.
+* In either case, **event.directory.cookie** will contain the above cookie.
+
+**Notes**
+
+* Not supported by all IEC devices.
+* The kernel does not ensure that the directory is empty -- that is left to the device (IEC) or driver (fat32).
+* The IEC protocol only supports one command (mkdir, rmdir, rename, delete) per device at a time.  The kernel does not, however, prevent you from trying.  Consider yourself warned.
+
+
 ## Network Calls - Generic
 
 ### Network.Match
@@ -726,8 +809,7 @@ Initializes a TCP socket in the user's address space.
 
 **Input**
 
-* **kernel.args.net.socket** points to a 256 byte 
-TCP socket structure (includes a re-transmission queue).
+* **kernel.args.net.socket** points to a 256 byte TCP socket structure (includes a re-transmission queue).
 * **kernel.args.net.dest_ip** contains the destination address.
 * **kernel.args.net.dest_port** contains the desired destination port.
 
@@ -742,22 +824,45 @@ TCP socket structure (includes a re-transmission queue).
 **Notes**
 
 * Opening a TCP socket _does not_ create a packet filter for the particular socket.  Instead, ALL TCP packets received by the kernel are queued as events; it is up to the user program to accept or reject each in turn; see **Network.Match**.
+* The kernel does not prevent you from binding multiple sockets to the same endpoint, but you shouldn't.
 
 ### Network.TCP.Accept
 
 Accepts a new connection from the outside world.
 
+**Input**
+
+* The current event is a TCP SYN packet.
+* **kernel.args.net.socket** points to a 256 byte TCP socket structure which will represent the accepted connection.
+
+**Output**
+
+* Carry clear: socket initialized
+* Carry set: event is not a TCP SYN packet.
+
 **notes**
 
-* _Not yet implemented._
+* Accepting a TCP socket _does not_ create a packet filter for the particular socket.  Instead, ALL TCP packets received by the kernel are queued as events; it is up to the user program to accept or reject each in turn; see **Network.Match**.
+* The kernel does not prevent you from binding multiple sockets to the same endpoint, but you shouldn't.
+* As with all things IP, the kernel will try to reply; it will not, however, retry on its own.
 
 ### Network.TCP.Reject
 
 Rejects a connection from the outside world.  May also be used to forcibly abort an existing connection.
 
-**notes**
+**Input**
 
-* _Not yet implemented._
+The current event is a TCP event.
+
+**Output**
+
+* Carry clear if the reset was sent.
+* Carry set on error (out of network buffers).
+
+**Notes**
+
+* TCP applications should reject all TCP packets that don't match an existing socket. 
+* The kernel does not prevent you from rejecting valid packets.
 
 
 ### Network.TCP.Send
