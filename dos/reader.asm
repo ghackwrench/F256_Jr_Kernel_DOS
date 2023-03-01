@@ -52,7 +52,9 @@ read_file
             jsr     kernel.File.Open
             bcs     _error
 _loop
-            jsr     kernel.Yield    ; Not required; but good while waiting.
+            lda     kernel.args.events.pending
+            beq     _loop
+            ;jsr     kernel.Yield    ; Not required; but good while waiting.
             jsr     kernel.NextEvent
             bcs     _loop
 
