@@ -1,6 +1,6 @@
 # The TinyCore 65c02 MicroKernel<br>F256(K) Edition
 
-The TinyCore 6502 MicroKernel for the Foenix F256/F256K line of computers is a powerful alternative to the typical BIOS style kernels that come with most 8-bit computers.  This kernel offers the following features:
+The TinyCore 65c02 MicroKernel for the Foenix F256/F256K line of computers is a powerful alternative to the typical BIOS style kernels that come with most 8-bit computers.  This kernel offers the following features:
 
 * An event-based programming model for real-time games and VMs.
 * A network stack supporting multiple concurrent TCP and UDP sockets.
@@ -30,7 +30,7 @@ The 'ghackwrench' repo contains the latest release.  The 'paulscottrobson' repo 
 
 ### Flashing the Kernel
 
-The kernel consists of four 8k blocks which must be flashed into the last four blocks of the F256.  Using the F256 Programmer Tool (Windows), the kernel needs to be flashed into Flash Blocks $3C-$3F.  Alternately, the SuperBASIC repo contains a script which uses a python based loader to install SuperBASIC along with the Kernel.
+The kernel consists of five 8k blocks which must be flashed into the last five blocks of the F256.  Using the F256 Programmer Tool (Windows), the kernel needs to be flashed into Flash Blocks $3B-$3F.  Alternately, the SuperBASIC repo contains a script which uses a python based loader to install SuperBASIC along with the Kernel.
 
 ### DIP Switches
 
