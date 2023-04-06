@@ -69,12 +69,13 @@ write_test(char *dest)
 }
 
 void 
-dir(void)
+dir(const char *path)
 {
     struct DIR *dir;
     
-    if (dir = opendir("0:")) {
+    if (dir = opendir(path)) {
         struct dirent *dirent;
+        puts("Dir Open Succeeded");
         for (;;) {
             if (dirent = readdir(dir)) {
                 
@@ -110,8 +111,8 @@ main()
     
     do {
         
-        dir();
-    
+        dir("0:");
+        
         if (!write_test("0:test.txt")) {
             printf("Write test failed.\n");
             break;
@@ -143,7 +144,8 @@ main()
             break;
         }
         
-        
+        dir("1:");
+
     } while (false);
     
     puts("");

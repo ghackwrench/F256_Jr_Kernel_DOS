@@ -32,6 +32,8 @@ extern struct event_t event;
 extern struct call_args args;
 #pragma zpsym ("args")
 
+#define MAX_DRIVES 8
+
 // Just hard-coded for now.
 #define MAX_ROW 60
 #define MAX_COL 80
@@ -327,18 +329,18 @@ close(int fd)
 ////////////////////////////////////////
 // dirent
 
-static char dir_stream;
+static char dir_stream[MAX_DRIVES];
 
 DIR* __fastcall__ 
 opendir (const char* name)
 {
     char drive, stream;
     
-    if (dir_stream) {
+    name = path_without_drive(name, &drive);
+    
+    if (dir_stream[drive]) {
         return NULL;  // Only one at a time.
     }
-    
-    name = path_without_drive(name, &drive);
     
     args.directory.open.drive = drive;
     args.common.buf = name;
@@ -359,18 +361,14 @@ opendir (const char* name)
         }
     }
     
-    dir_stream = stream;
-    return (DIR*) &dir_stream;
+    dir_stream[drive] = stream;
+    return (DIR*) &dir_stream[drive];
 }
 
 struct dirent* __fastcall__ 
 readdir(DIR* dir)
 {
     static struct dirent dirent;
-    
-    if (!dir) {
-        return NULL;
-    }
     
     if (!dir) {
         return NULL;
@@ -384,7 +382,7 @@ readdir(DIR* dir)
     
     for(;;) {
         
-        int len;
+        unsigned len;
         
         event.type = 0;
         asm("jsr %w", VECTOR(NextEvent));
@@ -402,7 +400,6 @@ readdir(DIR* dir)
             args.common.buf = &dirent.d_blocks;
             args.common.buflen = sizeof(dirent.d_blocks);
             CALL(ReadExt);
-                
             dirent.d_type = (dirent.d_blocks == 0);
             break;
                 
@@ -424,14 +421,15 @@ readdir(DIR* dir)
         
         // Copy the name.
         len = event.directory.file.len;
-            
         if (len >= sizeof(dirent.d_name)) {
             len = sizeof(dirent.d_name) - 1;
         }
             
-        args.common.buf = &dirent.d_name;
-        args.common.buflen = len;
-        CALL(ReadData);
+        if (len > 0) {
+            args.common.buf = &dirent.d_name;
+            args.common.buflen = len;
+            CALL(ReadData);
+        }
         dirent.d_name[len] = '\0';
                 
         return &dirent;
@@ -457,6 +455,7 @@ closedir (DIR* dir)
         event.type = 0;
         asm("jsr %w", VECTOR(NextEvent));
         if (event.type == EVENT(directory.CLOSED)) {
+            *(char*)dir = 0;
             return 0;
         }
     }
@@ -493,9 +492,15 @@ remove(const char* name)
 int __fastcall__ 
 rename(const char* name, const char *to)
 {
-    char drive, stream;
+    char drive, stream, dest;
     
     name = path_without_drive(name, &drive);
+    to = path_without_drive(to, &dest);
+    if (dest != drive) {    
+        // rename across drives is not supported.
+        return -1;
+    }
+    
     args.file.delete.drive = drive;
     args.common.buf = name;
     args.common.buflen = strlen(name);
