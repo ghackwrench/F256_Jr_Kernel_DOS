@@ -70,7 +70,6 @@ _done
             rts
 
 _loop
-            jsr     kernel.Yield        ; Polite, not actually needed.
             jsr     kernel.NextEvent
             bcs     _loop
             lda     event.type  
