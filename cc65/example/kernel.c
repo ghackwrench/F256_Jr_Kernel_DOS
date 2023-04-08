@@ -158,7 +158,7 @@ path_without_drive(const char *path, char *drive)
         
     return (path + 2);
 }
- 
+
 int
 open(const char *fname, int mode, ...)
 {
@@ -184,14 +184,13 @@ open(const char *fname, int mode, ...)
     for(;;) {
         event.type = 0;
         asm("jsr %w", VECTOR(NextEvent));
-        if (event.type == EVENT(file.OPENED)) {
+        switch (event.type) {
+        case EVENT(file.OPENED):
             return ret;
-        }
-        if (event.type == EVENT(file.NOT_FOUND)) {
+        case EVENT(file.NOT_FOUND):
+        case EVENT(file.ERROR):
             return -1;
-        }
-        if (event.type == EVENT(file.ERROR)) {
-            return -1;
+        default: continue;
         }
     }
 }
@@ -220,7 +219,8 @@ kernel_read(int fd, void *buf, uint16_t nbytes)
     for(;;) {
         event.type = 0;
         asm("jsr %w", VECTOR(NextEvent));
-        if (event.type == EVENT(file.DATA)) {
+        switch (event.type) {
+        case EVENT(file.DATA):
             args.common.buf = buf;
             args.common.buflen = event.file.data.delivered;
             asm("jsr %w", VECTOR(ReadData));
@@ -228,12 +228,11 @@ kernel_read(int fd, void *buf, uint16_t nbytes)
                 return 256;
             }
             return event.file.data.delivered;
-        }
-        if (event.type == EVENT(file.EOF)) {
+        case EVENT(file.EOF):
             return 0;
-        }
-        if (event.type == EVENT(file.ERROR)) {
+        case EVENT(file.ERROR):
             return -1;
+        default: continue;
         }
     }
 }
@@ -316,12 +315,21 @@ write(int fd, void *buf, uint16_t nbytes)
         
     return total;
 }
-
 void
 close(int fd)
 {
     args.file.close.stream = fd;
     asm("jsr %w", VECTOR(File.Close));
+    for(;;) {
+        event.type = 0;
+        asm("jsr %w", VECTOR(NextEvent));
+        switch (event.type) {
+        case EVENT(file.CLOSED):
+        case EVENT(file.ERROR):
+                return;
+        default: continue;
+        }
+    }
 }
 
 
@@ -342,6 +350,7 @@ opendir (const char* name)
         return NULL;  // Only one at a time.
     }
     
+    // flush_events();
     args.directory.open.drive = drive;
     args.common.buf = name;
     args.common.buflen = strlen(name);
@@ -489,17 +498,46 @@ remove(const char* name)
     return 0;
 }
 
+static bool
+find_name(const char *name, int *offset)
+{
+    int i, pos;
+    
+    for (i = pos = 0; name[i]; i++) {
+        if (name[i] == '/') {
+            pos = i+1;
+            if (!name[pos]) {
+                // No base name found!
+                return false;
+            }
+        }
+    }
+    
+    *offset = pos;
+    return true;
+}
+
 int __fastcall__ 
 rename(const char* name, const char *to)
 {
-    char drive, stream, dest;
+    char drive, drive2, stream;
+    int path1, path2;
     
     name = path_without_drive(name, &drive);
-    to = path_without_drive(to, &dest);
-    if (dest != drive) {    
-        // rename across drives is not supported.
+    to = path_without_drive(to, &drive2);
+
+    // ensure that the paths match
+    if (false
+        || (drive != drive2)
+        || !find_name(name, &path1)
+        || !find_name(to, &path2)
+        || (path1 != path2)
+        || (strncmp(name, to, path1) != 0)
+        ) {
         return -1;
     }
+        
+    to += path2;
     
     args.file.delete.drive = drive;
     args.common.buf = name;

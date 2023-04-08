@@ -20,12 +20,13 @@ copy_test(char *src, char *dest)
                     break;
                 }
                 fputc(c, out);
+    
             }
             fclose(out);
         }
         fclose(in);
     }
-    
+    puts("Copy complete");
     return ret;
 }
 
@@ -45,6 +46,7 @@ read_test(char *src)
             putchar(c);
         }
         fclose(fp);
+        puts("");
         return true;
     }
 
@@ -57,7 +59,7 @@ write_test(char *dest)
 {
     FILE *fp;
     
-    printf("Writing test.txt.\n");
+    printf("Writing %s.\n", dest);
     fp = fopen(dest, "w");
     if (fp != NULL) {
         fwrite("test!", 1, 5, fp);
@@ -104,42 +106,51 @@ int
 main()
 {
     char c = 0;
+    int i;
     
     putchar(12);  // cls
     puts("Hello world!");
-    puts("Waiting for IEC init to complete.");
     
     do {
+        puts("Testing");
         
-        dir("0:");
+        dir("1:");
         
-        if (!write_test("0:test.txt")) {
+        if (!write_test("1:test.txt")) {
             printf("Write test failed.\n");
             break;
         }
 
-        if (!read_test("0:test.txt")) {
+        if (!read_test("1:test.txt")) {
             printf("Read test failed.\n");
             break;
         }
 
-        if (!copy_test("test.txt", "test2.txt")) {
+        if (!read_test("1:test.txt")) {
+            printf("Read test failed.\n");
+            break;
+        }
+        
+        //break;
+        //dir("1:");
+        
+        if (!copy_test("1:test.txt", "1:test2.txt")) {
             printf("Copy test failed.\n");
             break;
         }
         
-        if (rename("test2.txt", "copy.txt") != 0) {
+        if (rename("1:test2.txt", "1:copy.txt") != 0) {
             printf("rename failed.\n");
             break;
         }
         
-        if (!read_test("copy.txt")) {
+        if (!read_test("1:copy.txt")) {
             printf("Read test failed.\n");
             break;
         }
         
         
-        if (remove("copy.txt") != 0) {
+        if (remove("1:copy.txt") != 0) {
             printf("delete failed.\n");
             break;
         }
