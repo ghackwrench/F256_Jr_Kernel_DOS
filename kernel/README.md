@@ -134,7 +134,7 @@ For games, and other real-time applications, a program will typically contain a 
 handle_events
 
           ; Peek at the queue to see if anything is pending
-            lda		kernel.events.pending  ; Negated count
+            lda		kernel.args.events.pending  ; Negated count
             bpl		_done
 
 	  ; Get the next event.
