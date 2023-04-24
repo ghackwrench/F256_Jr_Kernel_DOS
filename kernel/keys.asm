@@ -2,7 +2,7 @@
 ; Copyright 2022 Jessie Oberreuter <joberreu@moselle.com>.
 ; As with the Linux Kernel Exception to the GPL3, programs
 ; built to run on the MicroKernel are expected to include
-; this file.  Doing so does not effect their license status.
+; this file.  Doing so does not affect their license status.
 
         .virtual 0
 LSHIFT  .byte   ?
