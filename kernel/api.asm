@@ -97,6 +97,7 @@ DrawColumn  .fill   4   ; Draw text/color buffers top-to-bottom
 Config      .namespace
 GetTime     .fill   4
 SetTime     .fill   4
+            .fill   12  ; 65816 vectors
 GetSysInfo  .fill   4
 SetBPS      .fill   4   ; Set the serial BPS (should match the SLIP router's speed).
             .endn
