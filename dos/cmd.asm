@@ -53,6 +53,7 @@ keys        .null   "keys"
 exec        .null   "exec"
 mkdir       .null   "mkdir"     
 rmdir       .null   "rmdir"     
+wifi        .null   "wifi"
             .endn
 
 commands
@@ -72,6 +73,7 @@ commands
             .word   words.exec,     exec.cmd
             .word   words.mkdir,    mkdir.cmd
             .word   words.rmdir,    rmdir.cmd
+            .word   words.wifi,     wifi.cmd
             .word   0
 
 help
@@ -108,6 +110,7 @@ _msg
             .text   "keys                Demonstrates key status tracking.", $0a
             .text   "exec   <$hex>       JSR to a program in memory (try $a015).", $0a
             .text   "help                Prints this text.", $0a
+            .text   "wifi <ssid> <pass>  Configures the wifi access point."
             .byte   $0
 
 start
