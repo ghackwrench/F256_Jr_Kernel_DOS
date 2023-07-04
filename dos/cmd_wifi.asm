@@ -114,6 +114,13 @@ _loop       lda     (kernel.args.net.buf),y
             cmp     #'>'
             bne     _okay
 
+            ldx     #4
+            ldy     #0
+_delay      dey
+            bne     _delay            
+            dex
+            bne     _delay
+
             ldx     state
             inc     state
             inc     state
