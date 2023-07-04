@@ -5,11 +5,13 @@ wifi        .namespace
             .section    dp
 state       .byte       ?
 reset       .byte       ?
+writep      .word       ?
             .send            
 
             .section    pages
 socket      .fill       256
 buffer      .fill       256
+write_buf   .fill       256
             .send            
 
             .section    code
@@ -27,6 +29,13 @@ cmd
           ; Init the conversation state.
             stz     state
             stz     reset
+
+          ; Buffer the output so we can include the CR at the end,
+          ; and so we can put the delay in one place for the stupid
+          ; config shell on the feather...
+            stz     writep+0
+            lda     #>write_buf
+            sta     writep+1            
 
           ; Start the connection.
             jsr     tcp_open
@@ -113,13 +122,6 @@ _loop       lda     (kernel.args.net.buf),y
             bne     _loop
             cmp     #'>'
             bne     _okay
-
-            ldx     #4
-            ldy     #0
-_delay      dey
-            bne     _delay            
-            dex
-            bne     _delay
 
             ldx     state
             inc     state
@@ -243,20 +245,52 @@ _lf         .byte   10
 
 tcp_send
 
-          ; Print the buffer.
+          ; Print the buffer;
+          ; copy it to writep.
             ldy     #0
 _loop       lda     (kernel.args.net.buf),y
+            sta     (writep)
+            inc     writep
             jsr     putc
             iny
             cpy     kernel.args.net.buflen
             bne     _loop
+            
+            cmp     #10
+            beq     _send
+            rts
+
+_send            
 
           ; Send it.
             stz     kernel.args.net.socket+0
             lda     #>socket
             sta     kernel.args.net.socket+1
+            
+            lda     writep
+            sta     kernel.args.net.buflen
+            stz     writep
+
+            stz     kernel.args.net.buf+0
+            lda     #>write_buf
+            sta     kernel.args.net.buf+1
+            
+            jsr     delay
             jmp     kernel.Net.TCP.Send
 
+delay
+            jsr     _l8
+_l8         jsr     _l4
+_l4         jsr     _l2
+_l2         jsr     _l1
+_l1
+            ldx     #200
+            ldy     #0
+_delay      dey
+            bne     _delay            
+            dex
+            bne     _delay
+            rts
 
 net_init
     ; Send a dummy packet to kick the networking.
