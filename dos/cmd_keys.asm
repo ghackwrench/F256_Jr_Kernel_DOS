@@ -32,9 +32,9 @@ _loop
 _joy
             ldx     #0
             lda     event.joystick.joy0
-            jsr     print_hex
+            jsr     display.print_hex
             lda     event.joystick.joy1
-            jsr     print_hex
+            jsr     display.print_hex
             bra     _loop
 
 _released
@@ -60,27 +60,6 @@ _done
             clc
             rts
 
-print_hex
-            pha
-            lsr     a
-            lsr     a
-            lsr     a
-            lsr     a
-            jsr     _digit
-            pla
-            and     #$0f
-            jsr     _digit
-            rts
-_digit
-            phy
-            tay
-            lda     _digits,y
-            ply
-            sta     $c000,x
-            inx
-            rts
-_digits                             
-            .text   "0123456789abcdef"
 
             .send
             .endn

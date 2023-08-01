@@ -15,11 +15,13 @@ DOS	= \
 	dos/cmd_keys.asm \
 	dos/cmd_exec.asm \
 	dos/cmd_wifi.asm \
+	dos/cmd_external.asm \
 	dos/strings.asm \
 	dos/display.asm \
 	dos/readline.asm \
 	dos/reader.asm \
-	kernel/api.asm
+	kernel/api.asm \
+	kernel/keys.asm
 
 COPT = -C -Wall -Werror -Wno-shadow -x --verbose-list -I .
 

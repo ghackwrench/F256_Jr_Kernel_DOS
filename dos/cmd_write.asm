@@ -18,6 +18,7 @@ cmd
             bne     _done
 
           ; Set the drive
+            lda     #1  ; Token #1
             jsr     readline.parse_drive
             sta     kernel.args.file.open.drive
 

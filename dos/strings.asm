@@ -27,15 +27,14 @@ puts_cr
             jsr     puts
             jmp     put_cr
 
-puts
+puts_zero
+        ; Input - XA string            
+            phx
             phy
 
-            tay
-            lda     Strings+0,y
-            sta     strings.str+0
-            lda     Strings+1,y
+            stx     strings.str+0
             sta     strings.str+1
-            
+
             ldy     #0
 _loop
             lda     (strings.str),y
@@ -44,6 +43,19 @@ _loop
             iny
             bra     _loop
 _done
+            ply
+            plx
+            clc
+            rts            
+
+puts
+            phy
+
+            tay
+            ldx     Strings+0,y
+            lda     Strings+1,y
+            jsr     puts_zero
+            
             ply
             clc
             rts            

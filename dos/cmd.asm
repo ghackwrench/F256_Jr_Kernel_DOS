@@ -17,7 +17,7 @@ cmd         .namespace
             .mkstr  nolist,     "No drives found."
             .mkstr  unknown,    "Unknown command."
             .mkstr  failed,     "Command failed."
-            .mkstr  help,       "Enter 'help' for help."
+            .mkstr  help,       "Enter 'help' for help, 'about' for information about this software."
             .mkstr  bad_drive,  "Drive number must be in [0..7]."
             .mkstr  no_drive,   "Drive not found."
 
@@ -38,6 +38,7 @@ words       .namespace
             .align  256
 base        .null   ""      ; So offset zero is invalid
 help        .null   "help"
+about       .null   "about"
 ls          .null   "ls"
 dir         .null   "dir"
 read        .null   "read"
@@ -58,6 +59,7 @@ wifi        .null   "wifi"
 
 commands
             .word   words.help,     help
+            .word   words.about,    about
             .word   words.ls,       dir.cmd
             .word   words.dir,      dir.cmd
             .word   words.read,     read.cmd
@@ -75,6 +77,66 @@ commands
             .word   words.rmdir,    rmdir.cmd
             .word   words.wifi,     wifi.cmd
             .word   0
+
+about
+            jsr     hardware
+            jsr     ukernel
+            jsr     fat32
+            rts        
+hardware    
+            phx
+
+            lda     #>_msg
+            ldx     #<_msg
+            jsr     strings.puts_zero
+
+            plx
+            rts        
+_msg
+            .text   $0a
+            .text   "Foenix F256 by Stefany Allaire", $0a
+            .text   "https://c256foenix.com/f256-jr",$0a
+            .text   $0a, $00
+
+ukernel            
+            phx
+
+            lda     #>_msg
+            ldx     #<_msg
+            jsr     strings.puts_zero
+
+            lda     #$E0
+            ldx     #$08
+            jsr     strings.puts_zero
+
+            jsr     put_cr
+            jsr     put_cr
+
+            plx
+            rts        
+_msg
+            .text   "TinyCore MicroKernel", $0a
+            .text   "Copyright 2022 Jessie Oberreuter", $0a
+            .text   "Gadget@HackwrenchLabs.com",$0a
+            .text   "Built/revision: ",0
+
+fat32
+            phx
+
+            ldx     #<_msg
+            lda     #>_msg
+            jsr     strings.puts_zero
+
+            plx
+            rts        
+
+_msg
+            .text   "Fat32 from https://github.com/commanderx16/x16-rom", $0a
+            .text   "Copyright 2020 Frank van den Hoef and Michael Steil", $0a
+            .text   $0a
+            .text   "Simple DOS Shell, built ", DATE_STR, $0a
+            .byte   $0
+            
 
 help
             lda     #<_msg
@@ -110,7 +172,8 @@ _msg
             .text   "keys                Demonstrates key status tracking.", $0a
             .text   "exec   <$hex>       JSR to a program in memory (try $a015).", $0a
             .text   "help                Prints this text.", $0a
-            .text   "wifi <ssid> <pass>  Configures the wifi access point."
+            .text   "about               Information about the software and hardware.", $0a
+            .text   "wifi <ssid> <pass>  Configures the wifi access point.", $0a
             .byte   $0
 
 start
@@ -261,6 +324,8 @@ _next
             inx
             bra     _cmd
 _fail
+          ; Set up argument array for user programs
+            jsr     readline.populate_arguments
 .if true
           ; See if it's the name of a binary
             stz     kernel.args.buf+0
@@ -272,6 +337,13 @@ _fail
             lda     #0
             sta     (kernel.args.buf),y
             jsr     kernel.RunNamed
+.endif
+.if true
+          ; Try to load an external user program on disk, kernel.args.buf is already initialized
+            jsr     external.cmd
+            bcs     _unknown_cmd
+            rts
+_unknown_cmd
 .endif
           ; If the chain failed, unknown command.
             lda     #unknown_str
