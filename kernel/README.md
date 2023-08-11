@@ -235,10 +235,6 @@ The bits are set when the associated switch is pressed, and clear when released.
 These events are generated whenever a network packet of the given type is received.  For TCP and UDP packets, a program can use the **kernel.Net.Match** call to see if the packet matches an open socket.  Non-matching UDP packets can be ignored; network aware programs should respond to unmatched TCP packets by calling **kernel.Net.TCP.Reject**.
 TCP and UDP payloads may be read by calling **kernel.Net.TCP.Recv** and **kernel.Net.UDP.Recv** respectively.  For ICMP packets, programs can get the raw data by calling **kernel.ReadData**.   
 
-**event.clock.TICK**
-
-This event is generated every second for general time reference.
-
 # Kernel Calls
 
 ## Generic Calls
@@ -402,7 +398,7 @@ Opens a file for read, append, or create/overwrite.  The file should not be conc
 **Events**
 
 * On a successful open/create/append, the kernel will queue a **file.OPENED** event.
-* For read or append, if the file does not exist, the kernel will queue a **file.NOT_FOUND** event.
+* For read or append, if the file does not exist, the kernel will queue a **file.NOT_FOUND** or (in the case of the X16 FAT32 code), a **file.ERROR** event.
 * File events contain the stream id (in **event.file.stream**) and the user supplied cookie (in **event.file.cookie**).
 
 **Notes**
@@ -410,6 +406,8 @@ Opens a file for read, append, or create/overwrite.  The file should not be conc
 * The kernel supports a maximum of 20 concurrently opened files (including directories and rename/delete operations) across all devices.
 * The IEC driver supports a maximum of 8 concurrently opened files (not counting directories and rename/delete operations) per device. 
 * Fat32 preserves case when creating files, and uses case-insensitive matching when opening files.
+* The FAT32 library doesn't presently distinguish between file-not-found and a media/file-system error when opening a file.
+* Do NOT close the file on file-not-found or error -- the kernel has already closed the stream.  There is a race condition here, in that if you successfully open a new file before you discover that the previous open has failed, it could be assigned the same stream ID, but users are far more likely to leak file handles by failing to close on error than encounter this race.  If you are implementing an OS layer, it's on you to serialize open requests.
 * IEC devices vary in their handling of case.  Users will just need to live with this.
 * Unlike other kernel calls, most file operations are blocking.  In the case of IEC, this is due to the fact that an interrupt driven interface was not available at the time of writing (it is now, so IEC can be improved).  In the case of Fat32, the fat32.s package we're using contains its own, blocking SPI stack (which may be replaced in the future).  Fortunately, most operations are fast enough that events won't be dropped.
 * The kernel does not lock files and does not check to see if a file is already in use.  Should you attempt to concurrently open the file in two or more streams, the resulting behavior is entirely up to the device (IEC) or the file-system driver (fat32.s).  The above statement that the file should not be concurrently opened should be treated as a strong warning. 
@@ -993,4 +991,54 @@ Copies the user provided text buffer to the screen (from top to bottom) starting
 **Notes**
 
 * _Not yet implemented._
+
+## Clock Calls
+
+
+### Clock.GetTime
+
+Returns the current time from the RTC.
+
+**Input**
+
+None.
+
+**Output**
+
+* **kernel.args.century** contains the two digit century in BCD.
+* **kernel.args.year** contains the two digit year of the century in BCD.
+* **kernel.args.month** contains the two digit month (1-12) in BCD.
+* **kernel.args.day** contains the two digit day of the month in BCD.
+* **kernel.args.hours** contains the two digit hour (0-23) in BCD.
+* **kernel.args.minutes** contains the two digit minute (0-59) in BCD.
+* **kernel.args.seconds** contains the two digit second (0-60) in BCD.
+* **kernel.args.centis** contains the two digit centi-second in BCD.
+
+
+### Clock.SetTimer
+
+Schedules a timer on either the FRAME interrupt or RTC seconds interrupt.
+
+**Input**
+
+* **kernel.args.timer.units** selects the queueu to schedule: **kernel.args.timer.FRAME** or **kernel.args.timer.SECONDS**.  ORing with **kernel.args.timer.QUERY** causes the call to return the current value of the given counter without scheduling an event.
+* **kernel.args.timer.absolute** contains the time value at which the kernel will queue the event.
+* **kernel.args.timer.cookie** contains the cookie to associate with the event once scheduled**
+
+**Output**
+
+* A contains the value of the given counter at the time of the call.
+* Carry set if the kernel is out of tokens.  Wait for some I/O to complete and try again.  This should really never happen.
+
+**Events**
+
+event.timer.EXPIRED is returned whenever the associated timer retires a queued event.  
+
+* **event.timer.value** contains the value of the associated timer when the event was queued.
+* **event.timer.cookie** contains the cookie provided at the time the event was scheduled.
+
+Notes: 
+
+* If the system is unable to deliver an event because the event queue is full, it will try again the next time the given counter is updated (ie on the next FRAME or RTC seconds IRQ).
+* If you want a continuous stream of events, you must reschedule each time.  This approach minimizes the chances that the event queue will fill up and block.  If you want to be sure to always process every event that /would/ have come in even if you start to fall behind, the easiest way is to first query the queue for a baseline, and then always rescheduled from that baseline.
 
