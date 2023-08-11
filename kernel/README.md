@@ -402,7 +402,7 @@ Opens a file for read, append, or create/overwrite.  The file should not be conc
 **Events**
 
 * On a successful open/create/append, the kernel will queue a **file.OPENED** event.
-* For read or append, if the file does not exist, the kernel will queue a **file.NOT_FOUND** or (in the case of the X16 FAT32 code), a **file.ERROR** event.
+* For read or append, if the file does not exist, the kernel will queue a **file.NOT_FOUND** event.
 * File events contain the stream id (in **event.file.stream**) and the user supplied cookie (in **event.file.cookie**).
 
 **Notes**
@@ -410,8 +410,6 @@ Opens a file for read, append, or create/overwrite.  The file should not be conc
 * The kernel supports a maximum of 20 concurrently opened files (including directories and rename/delete operations) across all devices.
 * The IEC driver supports a maximum of 8 concurrently opened files (not counting directories and rename/delete operations) per device. 
 * Fat32 preserves case when creating files, and uses case-insensitive matching when opening files.
-* The FAT32 library doesn't presently distinguish between file-not-found and a media/file-system error when opening a file.
-* Do NOT close the file on file-not-found or error -- the kernel has already closed the stream.  There is a race condition here, in that if you successfully open a new file before you discover that the previous open has failed, it could be assigned the same stream ID, but users are far more likely to leak file handles by failing to close on error than encounter this race.  If you are implementing an OS layer, it's on you to serialize open requests.
 * IEC devices vary in their handling of case.  Users will just need to live with this.
 * Unlike other kernel calls, most file operations are blocking.  In the case of IEC, this is due to the fact that an interrupt driven interface was not available at the time of writing (it is now, so IEC can be improved).  In the case of Fat32, the fat32.s package we're using contains its own, blocking SPI stack (which may be replaced in the future).  Fortunately, most operations are fast enough that events won't be dropped.
 * The kernel does not lock files and does not check to see if a file is already in use.  Should you attempt to concurrently open the file in two or more streams, the resulting behavior is entirely up to the device (IEC) or the file-system driver (fat32.s).  The above statement that the file should not be concurrently opened should be treated as a strong warning. 
