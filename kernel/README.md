@@ -1017,18 +1017,18 @@ None.
 
 ### Clock.SetTimer
 
-Schedules a timer on either the FRAME interrupt or RTC seconds interrupt.
+Schedules a timer on either the FRAME interrupt or the RTC seconds interrupt.
 
 **Input**
 
-* **kernel.args.timer.units** selects the queueu to schedule: **kernel.args.timer.FRAME** or **kernel.args.timer.SECONDS**.  ORing with **kernel.args.timer.QUERY** causes the call to return the current value of the given counter without scheduling an event.
-* **kernel.args.timer.absolute** contains the time value at which the kernel will queue the event.
-* **kernel.args.timer.cookie** contains the cookie to associate with the event once scheduled**
+* **kernel.args.timer.units** selects the queue to schedule: **kernel.args.timer.FRAME** or **kernel.args.timer.SECONDS**.  ORing with **kernel.args.timer.QUERY** causes the call to return the current value of the given counter without scheduling an event.
+* **kernel.args.timer.absolute** contains the time value at which the kernel will queue the event, mod 256.  Events less than 128 counts in the past will be scheduled immediately.  
+* **kernel.args.timer.cookie** contains the cookie to associate with the event once scheduled.
 
 **Output**
 
 * A contains the value of the given counter at the time of the call.
-* Carry set if the kernel is out of tokens.  Wait for some I/O to complete and try again.  This should really never happen.
+* Carry set if the kernel is out of tokens.  Wait for some I/O to complete and try again.  This should never happen.
 
 **Events**
 
@@ -1040,5 +1040,5 @@ event.timer.EXPIRED is returned whenever the associated timer retires a queued e
 Notes: 
 
 * If the system is unable to deliver an event because the event queue is full, it will try again the next time the given counter is updated (ie on the next FRAME or RTC seconds IRQ).
-* If you want a continuous stream of events, you must reschedule each time.  This approach minimizes the chances that the event queue will fill up and block.  If you want to be sure to always process every event that /would/ have come in even if you start to fall behind, the easiest way is to first query the queue for a baseline, and then always rescheduled from that baseline.
+* If you want a continuous stream of events, you must reschedule each time.  This approach minimizes the chances that the event queue will fill up and block.  If you want to be sure to always process every event that /would/ have come in even if you start to fall behind, the easiest way is to first query the queue for a baseline, and then always rescheduled from that baseline.  Just be sure that your code is generally keeping up!
 
