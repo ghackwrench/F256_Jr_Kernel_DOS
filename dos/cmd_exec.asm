@@ -2,8 +2,6 @@
 
 exec        .namespace
 
-            .mkstr      desc,  "This program shows the held status of keys.  Press <ENTER> to quite."
-
             .section    dp
 addr        .word       ?
             .send

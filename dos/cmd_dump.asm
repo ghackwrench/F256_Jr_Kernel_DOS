@@ -25,7 +25,7 @@ cmd
             jmp     reader.read_file
             
 print
-            jsr     print_hex
+            jsr     display.print_hex
             jsr     print_space
             dec     count
             bne     _done
@@ -38,26 +38,6 @@ _done
 print_space
             lda     #' ' 
             jmp     putc
-
-print_hex
-            pha
-            lsr     a
-            lsr     a
-            lsr     a
-            lsr     a
-            jsr     _digit
-            pla
-            and     #$0f
-            jsr     _digit
-            rts
-_digit
-            phy
-            tay
-            lda     _digits,y
-            ply
-            jmp     putc
-_digits                             
-            .text   "0123456789abcdef"
 
             .send
             .endn

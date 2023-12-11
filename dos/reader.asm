@@ -31,6 +31,7 @@ read_file
             stz     stop
 
           ; Set the drive 
+            lda     #1  ; Token #1
             jsr     readline.parse_drive
             sta     kernel.args.file.open.drive
 
@@ -63,6 +64,8 @@ _loop
             beq     _done
             cmp     #kernel.event.file.NOT_FOUND
             beq     _not_found
+            cmp     #kernel.event.file.ERROR
+            beq     _not_found
 
             jsr     _dispatch
             bra     _loop
@@ -78,8 +81,6 @@ _dispatch
             beq     _read
             cmp     #kernel.event.file.DATA
             beq     _data
-            cmp     #kernel.event.file.ERROR
-            beq     _eof
             cmp     #kernel.event.file.EOF
             beq     _eof
             cmp     #kernel.event.key.PRESSED

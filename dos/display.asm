@@ -13,7 +13,6 @@ display     .namespace
 src         .word   ?
 dest        .word   ?
 len         .byte   ?
-line_ptr    .word   ?
 cur_line    .byte   ?
 scroll      .byte   ?
 
@@ -21,7 +20,6 @@ color       .byte   ?
 curcol      .byte   ?
 cursor      .byte   ?
 screen      .word   ?
-str         .word   ?
             .send
 
 TEXT_LUT_FG = $d800
@@ -43,6 +41,8 @@ init
             sta     io_ctrl
 
             rts
+
+
 
 set_cursor
         jsr     cursor_off
@@ -73,7 +73,29 @@ update_cursor
         sty     io_ctrl
         ply
         rts
-        
+
+
+print_hex
+            pha
+            lsr     a
+            lsr     a
+            lsr     a
+            lsr     a
+            jsr     _digit
+            pla
+            and     #$0f
+            jsr     _digit
+            rts
+_digit
+            phy
+            tay
+            lda     _digits,y
+            ply
+            jmp     putc
+_digits                             
+            .text   "0123456789abcdef"
+
+
 putchar
         pha
         phy

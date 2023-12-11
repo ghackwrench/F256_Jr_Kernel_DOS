@@ -10,17 +10,18 @@ MAX_TOKENS = 8
 line        .word       ?
             .send
              
-            .section    pages
-buf         .fill       256     ; Only need 80, but now it's aligned.
-            .send
-
             .section    data
 cursor      .byte       ?
 length      .byte       ?
 tokens      .fill       MAX_TOKENS
 token_count .byte       ?   ; Token count
             .send
-            
+
+            .section    kupdata
+buf         .fill       128 ; Only need 80, must be page aligned
+argv        .fill       (readline.MAX_TOKENS+1)*2
+            .send
+
             .section    code
 
 read            
@@ -190,6 +191,36 @@ _done
             ply
             rts
 
+populate_arguments:
+          ; Populate argv array
+            ldx     #0
+            ldy     #0
+_copy_token
+            lda     readline.tokens,y
+            sta     argv,x
+            inx
+            lda     #>readline.buf
+            sta     argv,x
+            inx
+            iny
+            cpy     readline.token_count
+            bne     _copy_token
+
+          ; null terminate argv array
+            stz     argv,x
+            stz     argv+1,x
+
+          ; Set ext and extlen to argv and argc
+            lda     #<argv
+            sta     kernel.args.ext
+            lda     #>argv
+            sta     kernel.args.ext+1
+            lda     readline.token_count
+            asl     a
+            sta     kernel.args.extlen
+
+            rts
+
 tokenize
             ldx     #0      ; Token count
             ldy     #0      ; Start of line
@@ -267,6 +298,8 @@ _out
             rts
             
 parse_drive
+	; IN: A = token#
+			tax
 
           ; Make sure we have an argument
             lda     token_count
@@ -274,7 +307,7 @@ parse_drive
             bcc     _default
             
           ; Make sure it's at least 2 characters
-            lda     #1  ; token 1
+            txa
             jsr     token_length
             cmp     #2
             bcc     _default
